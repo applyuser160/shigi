@@ -8,5 +8,7 @@
 
 int main(void)
 {
+    Board board = initBoard();
+    displayBoard(board);
     return 0;
 }
