@@ -5,6 +5,9 @@
 #include <time.h>
 #include <unistd.h>
 
+#define NUMBER_OF_EDGE 9
+#define NUMBER_OF_SQUARES 81
+
 // １手において、使用される８方向の最大数
 #define MAXIMUM_NUMBER_OF_DIRECTIONS_DUE_TO_POSITIONAL_MOVEMENT 2
 
@@ -127,7 +130,7 @@ WayOfMove getTemplateMove(TemplateMove move, Direction direction)
         break;
     case UNLIMITED:
         way.through = false;
-        way.adirectionMove[0].maxLength = 8;
+        way.adirectionMove[0].maxLength = NUMBER_OF_EDGE - 1;
         way.adirectionMove[0].direction = direction;
         way.adirectionMove[1].maxLength = 0;
         break;
@@ -145,6 +148,7 @@ WayOfMove getTemplateMove(TemplateMove move, Direction direction)
         way.adirectionMove[1].maxLength = 0;
         break;
     }
+    return way;
 }
 
 Piece generatePiece(PieceName name)
@@ -352,5 +356,49 @@ char* pieceToString(Piece piece)
         return "L";
     case PROMOTED_PAWN:
         return "P";
+    }
+}
+
+Direction switchDirection(Direction direction)
+{
+    return (direction + 4) % 8;
+}
+
+void getAddressOfDirection(Direction direction, int *vectorRow, int *vectorColumn)
+{
+    switch (direction)
+    {
+    case UP:
+        *vectorRow = -1;
+        *vectorColumn = 0;
+        break;
+    case UP_LEFT:
+        *vectorRow = -1;
+        *vectorColumn = 1;
+        break;
+    case LEFT:
+        *vectorRow = 0;
+        *vectorColumn = 1;
+        break;
+    case DOWN_LEFT:
+        *vectorRow = 1;
+        *vectorColumn = 1;
+        break;
+    case DOWN:
+        *vectorRow = 1;
+        *vectorColumn = 0;
+        break;
+    case DOWN_RIGHT:
+        *vectorRow = 1;
+        *vectorColumn = -1;
+        break;
+    case RIGHT:
+        *vectorRow = 0;
+        *vectorColumn = -1;
+        break;
+    case UP_RIGHT:
+        *vectorRow = -1;
+        *vectorColumn = -1;
+        break;
     }
 }
