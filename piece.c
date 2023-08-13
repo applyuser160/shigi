@@ -318,7 +318,6 @@ APiece generateAPiece(PieceName name, int index, Turn turn)
 {
     Piece p = generatePiece(name);
     APiece ap = {p, index, turn};
-    // printf("inpiece.name:%d\n", ap.piece.name);
     return ap;
 }
 

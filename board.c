@@ -340,15 +340,207 @@ void addMoves(Move **moves, int *count, Address address, APiece piece)
     {
         (*moves)[i] = old[i];
     }
-    // printf("addmove s3\n");
     Move move = {address, piece};
-    // printf("move.address:%d,%d\n", move.address.row, move.address.column);
-    // printf("move.piece.name:%s\n", pieceToString(move.piece.piece));
-    // printf("addmove s3.5\n");
-    // printf("count:%d\n", *count);
     (*moves)[*count] = move;
-    // printf("addmove s4\n");
     (*count)++;
+}
+
+// 特定のアドレスから任意の場所に移動し、指すことが出来る手を追加する
+void executeAddMoves(Move **pointableHands, int *count, Square square, Board board, Direction direction, Turn turn)
+{
+    WayOfMove wayOfMove = square.piece.piece.wayOfMove[direction];
+    if (wayOfMove.adirectionMove[0].maxLength == NUMBER_OF_EDGE - 1)
+    {
+        for (int j = 1; j < NUMBER_OF_EDGE - 1; j++)
+        {
+            Square square = getSquareWhenMoved(board, square.piece, square.address.row, square.address.column, j, direction);
+
+            // 駒が置かれていたら停止
+            if (square.piece.piece.name != NON)
+            {
+                // 置かれている駒が自分の駒の場合、その１つ前まで、置くことが出来る
+                // 置かれている駒が相手の駒の場合、そこまで置くことが出来る
+                if (square.piece.turn != square.piece.turn)
+                {
+                    if (ableBe(square.address, square.address, square.piece))
+                    {
+                        // 成ることが出来る場合
+                        if (ableMove(turn, square.piece.piece.name, square.address))
+                        {
+                            // 成らなくてもまだ、動くことが可能な場合
+                            addMoves(pointableHands, &count, square.address, square.piece);
+                            APiece promotedPiece = square.piece;
+                            promotedPiece.piece.name = getPieceNameAfterBecome(square.piece.piece);
+                            addMoves(pointableHands, &count, square.address, promotedPiece);
+                        }
+                        else
+                        {
+                            // 成らないと動くことが出来なくなる場合
+                            APiece promotedPiece = square.piece;
+                            promotedPiece.piece.name = getPieceNameAfterBecome(square.piece.piece);
+                            addMoves(pointableHands, &count, square.address, promotedPiece);
+                        }
+                    }
+                    addMoves(pointableHands, &count, square.address, square.piece);
+                }
+                return;
+            }
+            // 盤面から外れたら停止
+            else if (square.address.row == 0 && square.address.column == 0)
+            {
+                return;
+            }
+            else
+            {
+                if (ableBe(square.address, square.address, square.piece))
+                {
+                    // 成ることが出来る場合
+                    if (ableMove(turn, square.piece.piece.name, square.address))
+                    {
+                        // 成らなくてもまだ、動くことが可能な場合
+                        addMoves(pointableHands, &count, square.address, square.piece);
+                        APiece promotedPiece = square.piece;
+                        promotedPiece.piece.name = getPieceNameAfterBecome(square.piece.piece);
+                        addMoves(pointableHands, &count, square.address, promotedPiece);
+                    }
+                    else
+                    {
+                        // 成らないと動くことが出来なくなる場合
+                        APiece promotedPiece = square.piece;
+                        promotedPiece.piece.name = getPieceNameAfterBecome(square.piece.piece);
+                        addMoves(pointableHands, &count, square.address, promotedPiece);
+                    }
+                }
+                addMoves(pointableHands, &count, square.address, square.piece);
+            }
+        }
+    }
+    else if (wayOfMove.adirectionMove[1].maxLength == 1)
+    {
+        Square square = getSquareWhenMoved(board, square.piece, square.address.row, square.address.column, 1, direction);
+
+        // 駒が置かれていたら停止
+        if (square.piece.piece.name != NON)
+        {
+            // 置かれている駒が自分の駒の場合、その１つ前まで、置くことが出来る
+            // 置かれている駒が相手の駒の場合、そこまで置くことが出来る
+            if (square.piece.turn != square.piece.turn)
+            {
+                if (ableBe(square.address, square.address, square.piece))
+                {
+                    // 成ることが出来る場合
+                    if (ableMove(turn, square.piece.piece.name, square.address))
+                    {
+                        // 成らなくてもまだ、動くことが可能な場合
+                        addMoves(pointableHands, &count, square.address, square.piece);
+                        APiece promotedPiece = square.piece;
+                        promotedPiece.piece.name = getPieceNameAfterBecome(square.piece.piece);
+                        addMoves(pointableHands, &count, square.address, promotedPiece);
+                    }
+                    else
+                    {
+                        // 成らないと動くことが出来なくなる場合
+                        APiece promotedPiece = square.piece;
+                        promotedPiece.piece.name = getPieceNameAfterBecome(square.piece.piece);
+                        addMoves(pointableHands, &count, square.address, promotedPiece);
+                    }
+                }
+                addMoves(pointableHands, &count, square.address, square.piece);
+            }
+            return;
+        }
+        // 盤面から外れたら停止
+        else if (square.address.row == 0 && square.address.column == 0)
+        {
+            return;
+        }
+        else
+        {
+            if (ableBe(square.address, square.address, square.piece))
+            {
+                // 成ることが出来る場合
+                if (ableMove(turn, square.piece.piece.name, square.address))
+                {
+                    // 成らなくてもまだ、動くことが可能な場合
+                    addMoves(pointableHands, &count, square.address, square.piece);
+                    APiece promotedPiece = square.piece;
+                    promotedPiece.piece.name = getPieceNameAfterBecome(square.piece.piece);
+                    addMoves(pointableHands, &count, square.address, promotedPiece);
+                }
+                else
+                {
+                    // 成らないと動くことが出来なくなる場合
+                    APiece promotedPiece = square.piece;
+                    promotedPiece.piece.name = getPieceNameAfterBecome(square.piece.piece);
+                    addMoves(pointableHands, &count, square.address, promotedPiece);
+                }
+            }
+            addMoves(pointableHands, &count, square.address, square.piece);
+        }
+    }
+    else if (wayOfMove.adirectionMove[0].maxLength == 1)
+    {
+        Square square = getSquareWhenMoved(board, square.piece, square.address.row, square.address.column, 1, direction);
+
+        // 駒が置かれていたら停止
+        if (square.piece.piece.name != NON)
+        {
+            // 置かれている駒が自分の駒の場合、その１つ前まで、置くことが出来る
+            // 置かれている駒が相手の駒の場合、そこまで置くことが出来る
+            if (square.piece.turn != square.piece.turn)
+            {
+                if (ableBe(square.address, square.address, square.piece))
+                {
+                    // 成ることが出来る場合
+                    if (ableMove(turn, square.piece.piece.name, square.address))
+                    {
+                        // 成らなくてもまだ、動くことが可能な場合
+                        addMoves(pointableHands, &count, square.address, square.piece);
+                        APiece promotedPiece = square.piece;
+                        promotedPiece.piece.name = getPieceNameAfterBecome(square.piece.piece);
+                        addMoves(pointableHands, &count, square.address, promotedPiece);
+                    }
+                    else
+                    {
+                        // 成らないと動くことが出来なくなる場合
+                        APiece promotedPiece = square.piece;
+                        promotedPiece.piece.name = getPieceNameAfterBecome(square.piece.piece);
+                        addMoves(pointableHands, &count, square.address, promotedPiece);
+                    }
+                }
+                addMoves(pointableHands, &count, square.address, square.piece);
+            }
+            return;
+        }
+        // 盤面から外れたら停止
+        else if (square.address.row == 0 && square.address.column == 0)
+        {
+            return;
+        }
+        else
+        {
+            if (ableBe(square.address, square.address, square.piece))
+            {
+                // 成ることが出来る場合
+                if (ableMove(turn, square.piece.piece.name, square.address))
+                {
+                    // 成らなくてもまだ、動くことが可能な場合
+                    addMoves(pointableHands, &count, square.address, square.piece);
+                    APiece promotedPiece = square.piece;
+                    promotedPiece.piece.name = getPieceNameAfterBecome(square.piece.piece);
+                    addMoves(pointableHands, &count, square.address, promotedPiece);
+                }
+                else
+                {
+                    // 成らないと動くことが出来なくなる場合
+                    APiece promotedPiece = square.piece;
+                    promotedPiece.piece.name = getPieceNameAfterBecome(square.piece.piece);
+                    addMoves(pointableHands, &count, square.address, promotedPiece);
+                }
+            }
+            addMoves(pointableHands, &count, square.address, square.piece);
+        }
+    }
 }
 
 // 動かせる手を探索
@@ -357,227 +549,20 @@ int serchPointableHands(Condition condition, Move **pointableHands)
     // 動かせる手
     int count = 0;
 
-    // printf("turn:%d\n", condition.turn);
-
     // 盤面
     for (int i = 0; i < NUMBER_OF_SQUARES; i++)
     {
         APiece piece = condition.board.squares[i].piece;
-        // printf("cond turn:%d, piece turn:%d\n", condition.turn, piece.turn);
         if (piece.piece.name != NON && piece.turn == condition.turn)
         {
             Address address = condition.board.squares[i].address;
-            // printf("l1[%d]:piece:%s[%d,%d]\n", i, pieceToString(piece.piece), address.row, address.column);
             // ８方向で行ける場所を探索
             for (int d = 0; d < NUMBER_OF_DIRECTIONS; d++)
             {
-                WayOfMove wayOfMove = piece.piece.wayOfMove[d];
-                // printf("wayofmove[%d]:%d\n", d, wayOfMove.adirectionMove[0].maxLength);
-                if (wayOfMove.adirectionMove[0].maxLength == NUMBER_OF_EDGE - 1)
-                {
-                    // printf("[%d]infinity\n", d);
-                    for (int j = 1; j < NUMBER_OF_EDGE - 1; j++)
-                    {
-                        Square square = getSquareWhenMoved(condition.board, piece, address.row, address.column, j, d);
-
-                        // 駒が置かれていたら停止
-                        if (square.piece.piece.name != NON)
-                        {
-                            // 置かれている駒が自分の駒の場合、その１つ前まで、置くことが出来る
-                            // 置かれている駒が相手の駒の場合、そこまで置くことが出来る
-                            if (square.piece.turn != piece.turn)
-                            {
-                                if (ableBe(address, square.address, piece))
-                                {
-                                    // 成ることが出来る場合
-                                    if (ableMove(condition.turn, piece.piece.name, square.address))
-                                    {
-                                        // 成らなくてもまだ、動くことが可能な場合
-                                        addMoves(pointableHands, &count, square.address, piece);
-                                        APiece promotedPiece = piece;
-                                        promotedPiece.piece.name = getPieceNameAfterBecome(piece.piece);
-                                        addMoves(pointableHands, &count, square.address, promotedPiece);
-                                    }
-                                    else
-                                    {
-                                        // 成らないと動くことが出来なくなる場合
-                                        APiece promotedPiece = piece;
-                                        promotedPiece.piece.name = getPieceNameAfterBecome(piece.piece);
-                                        addMoves(pointableHands, &count, square.address, promotedPiece);
-                                    }
-                                }
-                                addMoves(pointableHands, &count, square.address, piece);
-                            }
-                            break;
-                        }
-                        // 盤面から外れたら停止
-                        else if (square.address.row == 0 && square.address.column == 0)
-                        {
-                            break;
-                        }
-                        else
-                        {
-                            if (ableBe(address, square.address, piece))
-                            {
-                                // 成ることが出来る場合
-                                if (ableMove(condition.turn, piece.piece.name, square.address))
-                                {
-                                    // 成らなくてもまだ、動くことが可能な場合
-                                    addMoves(pointableHands, &count, square.address, piece);
-                                    APiece promotedPiece = piece;
-                                    promotedPiece.piece.name = getPieceNameAfterBecome(piece.piece);
-                                    addMoves(pointableHands, &count, square.address, promotedPiece);
-                                }
-                                else
-                                {
-                                    // 成らないと動くことが出来なくなる場合
-                                    APiece promotedPiece = piece;
-                                    promotedPiece.piece.name = getPieceNameAfterBecome(piece.piece);
-                                    addMoves(pointableHands, &count, square.address, promotedPiece);
-                                }
-                            }
-                            addMoves(pointableHands, &count, square.address, piece);
-                        }
-                    }
-                }
-                else if (wayOfMove.adirectionMove[1].maxLength == 1)
-                {
-                    // printf("[%d]hop\n", d);
-                    Square square = getSquareWhenMoved(condition.board, piece, address.row, address.column, 1, d);
-
-                    // 駒が置かれていたら停止
-                    if (square.piece.piece.name != NON)
-                    {
-                        // 置かれている駒が自分の駒の場合、その１つ前まで、置くことが出来る
-                        // 置かれている駒が相手の駒の場合、そこまで置くことが出来る
-                        if (square.piece.turn != piece.turn)
-                        {
-                            if (ableBe(address, square.address, piece))
-                            {
-                                // 成ることが出来る場合
-                                if (ableMove(condition.turn, piece.piece.name, square.address))
-                                {
-                                    // 成らなくてもまだ、動くことが可能な場合
-                                    addMoves(pointableHands, &count, square.address, piece);
-                                    APiece promotedPiece = piece;
-                                    promotedPiece.piece.name = getPieceNameAfterBecome(piece.piece);
-                                    addMoves(pointableHands, &count, square.address, promotedPiece);
-                                }
-                                else
-                                {
-                                    // 成らないと動くことが出来なくなる場合
-                                    APiece promotedPiece = piece;
-                                    promotedPiece.piece.name = getPieceNameAfterBecome(piece.piece);
-                                    addMoves(pointableHands, &count, square.address, promotedPiece);
-                                }
-                            }
-                            addMoves(pointableHands, &count, square.address, piece);
-                        }
-                        continue;
-                    }
-                    // 盤面から外れたら停止
-                    else if (square.address.row == 0 && square.address.column == 0)
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        if (ableBe(address, square.address, piece))
-                        {
-                            // 成ることが出来る場合
-                            if (ableMove(condition.turn, piece.piece.name, square.address))
-                            {
-                                // 成らなくてもまだ、動くことが可能な場合
-                                addMoves(pointableHands, &count, square.address, piece);
-                                APiece promotedPiece = piece;
-                                promotedPiece.piece.name = getPieceNameAfterBecome(piece.piece);
-                                addMoves(pointableHands, &count, square.address, promotedPiece);
-                            }
-                            else
-                            {
-                                // 成らないと動くことが出来なくなる場合
-                                APiece promotedPiece = piece;
-                                promotedPiece.piece.name = getPieceNameAfterBecome(piece.piece);
-                                addMoves(pointableHands, &count, square.address, promotedPiece);
-                            }
-                        }
-                        addMoves(pointableHands, &count, square.address, piece);
-                    }
-                }
-                else if (wayOfMove.adirectionMove[0].maxLength == 1)
-                {
-                    // printf("[%d]infront\n", d);
-                    Square square = getSquareWhenMoved(condition.board, piece, address.row, address.column, 1, d);
-                    // printf("address:%d,%d,name:%s\n", square.address.row, square.address.column, pieceToString(square.piece.piece));
-
-                    // 駒が置かれていたら停止
-                    if (square.piece.piece.name != NON)
-                    {
-                        // 置かれている駒が自分の駒の場合、その１つ前まで、置くことが出来る
-                        // 置かれている駒が相手の駒の場合、そこまで置くことが出来る
-                        // printf("a\n");
-                        if (square.piece.turn != piece.turn)
-                        {
-                            if (ableBe(address, square.address, piece))
-                            {
-                                // 成ることが出来る場合
-                                if (ableMove(condition.turn, piece.piece.name, square.address))
-                                {
-                                    // 成らなくてもまだ、動くことが可能な場合
-                                    addMoves(pointableHands, &count, square.address, piece);
-                                    APiece promotedPiece = piece;
-                                    promotedPiece.piece.name = getPieceNameAfterBecome(piece.piece);
-                                    addMoves(pointableHands, &count, square.address, promotedPiece);
-                                }
-                                else
-                                {
-                                    // 成らないと動くことが出来なくなる場合
-                                    APiece promotedPiece = piece;
-                                    promotedPiece.piece.name = getPieceNameAfterBecome(piece.piece);
-                                    addMoves(pointableHands, &count, square.address, promotedPiece);
-                                }
-                            }
-                            addMoves(pointableHands, &count, square.address, piece);
-                        }
-                        continue;
-                    }
-                    // 盤面から外れたら停止
-                    else if (square.address.row == 0 && square.address.column == 0)
-                    {
-                        // printf("b\n");
-                        continue;
-                    }
-                    else
-                    {
-                        // printf("c\n");
-                        if (ableBe(address, square.address, piece))
-                        {
-                            // 成ることが出来る場合
-                            if (ableMove(condition.turn, piece.piece.name, square.address))
-                            {
-                                // 成らなくてもまだ、動くことが可能な場合
-                                addMoves(pointableHands, &count, square.address, piece);
-                                APiece promotedPiece = piece;
-                                promotedPiece.piece.name = getPieceNameAfterBecome(piece.piece);
-                                addMoves(pointableHands, &count, square.address, promotedPiece);
-                            }
-                            else
-                            {
-                                // 成らないと動くことが出来なくなる場合
-                                APiece promotedPiece = piece;
-                                promotedPiece.piece.name = getPieceNameAfterBecome(piece.piece);
-                                addMoves(pointableHands, &count, square.address, promotedPiece);
-                            }
-                        }
-                        addMoves(pointableHands, &count, square.address, piece);
-                    }
-                }
-                // printf("next direction\n");
+                executeAddMoves(pointableHands, &count, condition.board.squares[i], condition.board, d, condition.turn);
             }
         }
     }
-
-    // printf("count:%d\n", count);
 
     // 持ち駒
     for (int i = 0; i < NUMBER_OF_PIECES; i++)
