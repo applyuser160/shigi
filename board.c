@@ -220,6 +220,51 @@ void deployPieceNotOnBoard(APiece *notOnBoard[NUMBER_OF_PIECES], int index, APie
     *notOnBoard[index] = piece;
 }
 
+// 任意の位置にある駒が動くことが出来るか
+bool ableMove(Turn turn, PieceName name, Address address)
+{
+    if (turn == FIRST)
+    {
+        if (name == KNIGHT && address.row > 7)
+        {
+            return false;
+        }
+        else if ((name == LANCE || name == PAWN) && address.row > 8)
+        {
+            return false;
+        }
+    }
+    else if (turn == SECOND)
+    {
+        if (name == KNIGHT && address.row < 3)
+        {
+            return false;
+        }
+        else if ((name == LANCE || name == PAWN) && address.row < 2)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+// 指定の駒が成ることが出来るか
+bool ableBe(Address oldAddress, Address newAddress, APiece piece)
+{
+    if (piece.piece.promote)
+    {
+        if (piece.turn == FIRST)
+        {
+            return oldAddress.row < 4 || newAddress.row < 4;
+        }
+        else
+        {
+            return oldAddress.row > 6 || newAddress.row > 6;
+        }
+    }
+    return false;
+}
+
 // 指定の方向に移動する
 Square moveBoard(Board board, APiece piece, int row, int column, int length, Direction direction)
 {
@@ -342,6 +387,25 @@ int serchPointableHands(Condition condition, Move **pointableHands)
                             // 置かれている駒が相手の駒の場合、そこまで置くことが出来る
                             if (square.piece.turn != piece.turn)
                             {
+                                if (ableBe(address, square.address, piece))
+                                {
+                                    // 成ることが出来る場合
+                                    if (ableMove(condition.turn, piece.piece.name, square.address))
+                                    {
+                                        // 成らなくてもまだ、動くことが可能な場合
+                                        addMoves(pointableHands, &count, square.address, piece);
+                                        APiece promotedPiece = piece;
+                                        promotedPiece.piece.name = getPieceNameAfterBecome(piece.piece);
+                                        addMoves(pointableHands, &count, square.address, promotedPiece);
+                                    }
+                                    else
+                                    {
+                                        // 成らないと動くことが出来なくなる場合
+                                        APiece promotedPiece = piece;
+                                        promotedPiece.piece.name = getPieceNameAfterBecome(piece.piece);
+                                        addMoves(pointableHands, &count, square.address, promotedPiece);
+                                    }
+                                }
                                 addMoves(pointableHands, &count, square.address, piece);
                             }
                             break;
@@ -353,6 +417,25 @@ int serchPointableHands(Condition condition, Move **pointableHands)
                         }
                         else
                         {
+                            if (ableBe(address, square.address, piece))
+                            {
+                                // 成ることが出来る場合
+                                if (ableMove(condition.turn, piece.piece.name, square.address))
+                                {
+                                    // 成らなくてもまだ、動くことが可能な場合
+                                    addMoves(pointableHands, &count, square.address, piece);
+                                    APiece promotedPiece = piece;
+                                    promotedPiece.piece.name = getPieceNameAfterBecome(piece.piece);
+                                    addMoves(pointableHands, &count, square.address, promotedPiece);
+                                }
+                                else
+                                {
+                                    // 成らないと動くことが出来なくなる場合
+                                    APiece promotedPiece = piece;
+                                    promotedPiece.piece.name = getPieceNameAfterBecome(piece.piece);
+                                    addMoves(pointableHands, &count, square.address, promotedPiece);
+                                }
+                            }
                             addMoves(pointableHands, &count, square.address, piece);
                         }
                     }
@@ -369,6 +452,25 @@ int serchPointableHands(Condition condition, Move **pointableHands)
                         // 置かれている駒が相手の駒の場合、そこまで置くことが出来る
                         if (square.piece.turn != piece.turn)
                         {
+                            if (ableBe(address, square.address, piece))
+                            {
+                                // 成ることが出来る場合
+                                if (ableMove(condition.turn, piece.piece.name, square.address))
+                                {
+                                    // 成らなくてもまだ、動くことが可能な場合
+                                    addMoves(pointableHands, &count, square.address, piece);
+                                    APiece promotedPiece = piece;
+                                    promotedPiece.piece.name = getPieceNameAfterBecome(piece.piece);
+                                    addMoves(pointableHands, &count, square.address, promotedPiece);
+                                }
+                                else
+                                {
+                                    // 成らないと動くことが出来なくなる場合
+                                    APiece promotedPiece = piece;
+                                    promotedPiece.piece.name = getPieceNameAfterBecome(piece.piece);
+                                    addMoves(pointableHands, &count, square.address, promotedPiece);
+                                }
+                            }
                             addMoves(pointableHands, &count, square.address, piece);
                         }
                         continue;
@@ -380,6 +482,25 @@ int serchPointableHands(Condition condition, Move **pointableHands)
                     }
                     else
                     {
+                        if (ableBe(address, square.address, piece))
+                        {
+                            // 成ることが出来る場合
+                            if (ableMove(condition.turn, piece.piece.name, square.address))
+                            {
+                                // 成らなくてもまだ、動くことが可能な場合
+                                addMoves(pointableHands, &count, square.address, piece);
+                                APiece promotedPiece = piece;
+                                promotedPiece.piece.name = getPieceNameAfterBecome(piece.piece);
+                                addMoves(pointableHands, &count, square.address, promotedPiece);
+                            }
+                            else
+                            {
+                                // 成らないと動くことが出来なくなる場合
+                                APiece promotedPiece = piece;
+                                promotedPiece.piece.name = getPieceNameAfterBecome(piece.piece);
+                                addMoves(pointableHands, &count, square.address, promotedPiece);
+                            }
+                        }
                         addMoves(pointableHands, &count, square.address, piece);
                     }
                 }
@@ -397,6 +518,25 @@ int serchPointableHands(Condition condition, Move **pointableHands)
                         // printf("a\n");
                         if (square.piece.turn != piece.turn)
                         {
+                            if (ableBe(address, square.address, piece))
+                            {
+                                // 成ることが出来る場合
+                                if (ableMove(condition.turn, piece.piece.name, square.address))
+                                {
+                                    // 成らなくてもまだ、動くことが可能な場合
+                                    addMoves(pointableHands, &count, square.address, piece);
+                                    APiece promotedPiece = piece;
+                                    promotedPiece.piece.name = getPieceNameAfterBecome(piece.piece);
+                                    addMoves(pointableHands, &count, square.address, promotedPiece);
+                                }
+                                else
+                                {
+                                    // 成らないと動くことが出来なくなる場合
+                                    APiece promotedPiece = piece;
+                                    promotedPiece.piece.name = getPieceNameAfterBecome(piece.piece);
+                                    addMoves(pointableHands, &count, square.address, promotedPiece);
+                                }
+                            }
                             addMoves(pointableHands, &count, square.address, piece);
                         }
                         continue;
@@ -410,6 +550,25 @@ int serchPointableHands(Condition condition, Move **pointableHands)
                     else
                     {
                         // printf("c\n");
+                        if (ableBe(address, square.address, piece))
+                        {
+                            // 成ることが出来る場合
+                            if (ableMove(condition.turn, piece.piece.name, square.address))
+                            {
+                                // 成らなくてもまだ、動くことが可能な場合
+                                addMoves(pointableHands, &count, square.address, piece);
+                                APiece promotedPiece = piece;
+                                promotedPiece.piece.name = getPieceNameAfterBecome(piece.piece);
+                                addMoves(pointableHands, &count, square.address, promotedPiece);
+                            }
+                            else
+                            {
+                                // 成らないと動くことが出来なくなる場合
+                                APiece promotedPiece = piece;
+                                promotedPiece.piece.name = getPieceNameAfterBecome(piece.piece);
+                                addMoves(pointableHands, &count, square.address, promotedPiece);
+                            }
+                        }
                         addMoves(pointableHands, &count, square.address, piece);
                     }
                 }
@@ -435,27 +594,9 @@ int serchPointableHands(Condition condition, Move **pointableHands)
                 {
                     // 動けない場合
                     PieceName name = piece.piece.name;
-                    if (condition.turn == FIRST)
+                    if (ableMove(condition.turn, name, address))
                     {
-                        if (name == KNIGHT && address.row > 7)
-                        {
-                            condition;
-                        }
-                        else if ((name == LANCE || name == PAWN) && address.row > 8)
-                        {
-                            condition;
-                        }
-                    }
-                    else if (condition.turn == SECOND)
-                    {
-                        if (name == KNIGHT && address.row < 3)
-                        {
-                            condition;
-                        }
-                        else if ((name == LANCE || name == PAWN) && address.row < 2)
-                        {
-                            condition;
-                        }
+                        continue;
                     }
                     addMoves(pointableHands, &count, address, piece);
                 }

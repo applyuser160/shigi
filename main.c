@@ -19,5 +19,6 @@ int main(void)
         APiece piece = pointableHands[i].piece;
         printf("[%d]row:%d,column:%d,name:%s\n", i, address.row, address.column, pieceToString(piece.piece));
     }
+    
     return 0;
 }

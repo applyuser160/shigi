@@ -402,3 +402,41 @@ void getAddressOfDirection(Direction direction, int *vectorRow, int *vectorColum
         break;
     }
 }
+
+PieceName getPieceNameAfterBecome(Piece piece)
+{
+    switch (piece.name)
+    {
+    case NON:
+        return NON;
+    case KING:
+        return NON;
+    case ROOK:
+        return PROMOTED_ROOK;
+    case BICHOP:
+        return PROMOTED_BICHOP;
+    case GOLDGENERAL:
+        return NON;
+    case SILVERGENERAL:
+        return PROMOTED_SILVERGENERAL;
+    case KNIGHT:
+        return PROMOTED_KNIGHT;
+    case LANCE:
+        return PROMOTED_LANCE;
+    case PAWN:
+        return PROMOTED_PAWN;
+    case PROMOTED_ROOK:
+        return NON;
+    case PROMOTED_BICHOP:
+        return NON;
+    case PROMOTED_SILVERGENERAL:
+        return NON;
+    case PROMOTED_KNIGHT:
+        return NON;
+    case PROMOTED_LANCE:
+        return NON;
+    case PROMOTED_PAWN:
+        return NON;
+    }
+}
+
