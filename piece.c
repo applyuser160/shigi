@@ -68,8 +68,8 @@ typedef enum PieceName
 
 typedef enum Promote
 {
-    PROMOTED = true,
-    NOTPROMOTED = false,
+    PROMOTABLE = true,
+    NOTPROMOTABLE = false,
 }Promote;
 
 typedef enum Turn
@@ -114,7 +114,14 @@ typedef struct APiece
 
 Promote getPromoteByPieceName(PieceName name)
 {
-    return name > PAWN;
+    if (name == ROOK || name == BICHOP || name == SILVERGENERAL || name == KNIGHT || name == LANCE || name == PAWN)
+    {
+        return PROMOTABLE;
+    }
+    else
+    {
+        return NOTPROMOTABLE;
+    }
 }
 
 WayOfMove getTemplateMove(TemplateMove move, Direction direction)
@@ -436,6 +443,43 @@ PieceName getPieceNameAfterBecome(Piece piece)
         return NON;
     case PROMOTED_PAWN:
         return NON;
+    }
+}
+
+PieceName getPieceNameBeforeBecome(Piece piece)
+{
+    switch (piece.name)
+    {
+    case NON:
+        return NON;
+    case KING:
+        return KING;
+    case ROOK:
+        return ROOK;
+    case BICHOP:
+        return BICHOP;
+    case GOLDGENERAL:
+        return GOLDGENERAL;
+    case SILVERGENERAL:
+        return SILVERGENERAL;
+    case KNIGHT:
+        return KNIGHT;
+    case LANCE:
+        return LANCE;
+    case PAWN:
+        return PAWN;
+    case PROMOTED_ROOK:
+        return ROOK;
+    case PROMOTED_BICHOP:
+        return BICHOP;
+    case PROMOTED_SILVERGENERAL:
+        return SILVERGENERAL;
+    case PROMOTED_KNIGHT:
+        return KNIGHT;
+    case PROMOTED_LANCE:
+        return LANCE;
+    case PROMOTED_PAWN:
+        return PAWN;
     }
 }
 

@@ -64,47 +64,48 @@ Board initBoard()
         Square square = {address, NOT_USED, piece};
         board.squares[i] = square;
     }
-    deployAPiece(&board, generateAPiece(KING, 0, FIRST), 9, 5);
-    deployAPiece(&board, generateAPiece(ROOK, 1, FIRST), 8, 2);
-    deployAPiece(&board, generateAPiece(BICHOP, 2, FIRST), 8, 8);
-    deployAPiece(&board, generateAPiece(GOLDGENERAL, 3, FIRST), 9, 4);
-    deployAPiece(&board, generateAPiece(GOLDGENERAL, 4, FIRST), 9, 6);
-    deployAPiece(&board, generateAPiece(SILVERGENERAL, 5, FIRST), 9, 3);
-    deployAPiece(&board, generateAPiece(SILVERGENERAL, 6, FIRST), 9, 7);
-    deployAPiece(&board, generateAPiece(KNIGHT, 7, FIRST), 9, 2);
-    deployAPiece(&board, generateAPiece(KNIGHT, 8, FIRST), 9, 8);
-    deployAPiece(&board, generateAPiece(LANCE, 9, FIRST), 9, 1);
-    deployAPiece(&board, generateAPiece(LANCE, 10, FIRST), 9, 9);
-    deployAPiece(&board, generateAPiece(PAWN, 11, FIRST), 7, 1);
-    deployAPiece(&board, generateAPiece(PAWN, 12, FIRST), 7, 2);
-    deployAPiece(&board, generateAPiece(PAWN, 13, FIRST), 7, 3);
-    deployAPiece(&board, generateAPiece(PAWN, 14, FIRST), 7, 4);
-    deployAPiece(&board, generateAPiece(PAWN, 15, FIRST), 7, 5);
-    deployAPiece(&board, generateAPiece(PAWN, 16, FIRST), 7, 6);
-    deployAPiece(&board, generateAPiece(PAWN, 17, FIRST), 7, 7);
-    deployAPiece(&board, generateAPiece(PAWN, 18, FIRST), 7, 8);
-    deployAPiece(&board, generateAPiece(PAWN, 19, FIRST), 7, 9);
 
-    deployAPiece(&board, generateAPiece(KING, 20, SECOND), 1, 5);
-    deployAPiece(&board, generateAPiece(ROOK, 21, SECOND), 2, 8);
-    deployAPiece(&board, generateAPiece(BICHOP, 22, SECOND), 2, 2);
-    deployAPiece(&board, generateAPiece(GOLDGENERAL, 23, SECOND), 1, 4);
-    deployAPiece(&board, generateAPiece(GOLDGENERAL, 24, SECOND), 1, 6);
-    deployAPiece(&board, generateAPiece(SILVERGENERAL, 25, SECOND), 1, 3);
-    deployAPiece(&board, generateAPiece(SILVERGENERAL, 26, SECOND), 1, 7);
-    deployAPiece(&board, generateAPiece(KNIGHT, 27, SECOND), 1, 2);
-    deployAPiece(&board, generateAPiece(KNIGHT, 28, SECOND), 1, 8);
-    deployAPiece(&board, generateAPiece(LANCE, 29, SECOND), 1, 1);
-    deployAPiece(&board, generateAPiece(LANCE, 30, SECOND), 1, 9);
-    deployAPiece(&board, generateAPiece(PAWN, 31, SECOND), 3, 1);
-    deployAPiece(&board, generateAPiece(PAWN, 32, SECOND), 3, 2);
-    deployAPiece(&board, generateAPiece(PAWN, 33, SECOND), 3, 3);
-    deployAPiece(&board, generateAPiece(PAWN, 34, SECOND), 3, 4);
-    deployAPiece(&board, generateAPiece(PAWN, 35, SECOND), 3, 5);
-    deployAPiece(&board, generateAPiece(PAWN, 36, SECOND), 3, 6);
-    deployAPiece(&board, generateAPiece(PAWN, 37, SECOND), 3, 7);
-    deployAPiece(&board, generateAPiece(PAWN, 38, SECOND), 3, 8);
-    deployAPiece(&board, generateAPiece(PAWN, 39, SECOND), 3, 9);
+    deployAPiece(&board, generateAPiece(KING, 1, FIRST), 9, 5);
+    deployAPiece(&board, generateAPiece(ROOK, 2, FIRST), 8, 2);
+    deployAPiece(&board, generateAPiece(BICHOP, 3, FIRST), 8, 8);
+    deployAPiece(&board, generateAPiece(GOLDGENERAL, 4, FIRST), 9, 4);
+    deployAPiece(&board, generateAPiece(GOLDGENERAL, 5, FIRST), 9, 6);
+    deployAPiece(&board, generateAPiece(SILVERGENERAL, 6, FIRST), 9, 3);
+    deployAPiece(&board, generateAPiece(SILVERGENERAL, 7, FIRST), 9, 7);
+    deployAPiece(&board, generateAPiece(KNIGHT, 8, FIRST), 9, 2);
+    deployAPiece(&board, generateAPiece(KNIGHT, 9, FIRST), 9, 8);
+    deployAPiece(&board, generateAPiece(LANCE, 10, FIRST), 9, 1);
+    deployAPiece(&board, generateAPiece(LANCE, 11, FIRST), 9, 9);
+    deployAPiece(&board, generateAPiece(PAWN, 12, FIRST), 7, 1);
+    deployAPiece(&board, generateAPiece(PAWN, 13, FIRST), 7, 2);
+    deployAPiece(&board, generateAPiece(PAWN, 14, FIRST), 7, 3);
+    deployAPiece(&board, generateAPiece(PAWN, 15, FIRST), 7, 4);
+    deployAPiece(&board, generateAPiece(PAWN, 16, FIRST), 7, 5);
+    deployAPiece(&board, generateAPiece(PAWN, 17, FIRST), 7, 6);
+    deployAPiece(&board, generateAPiece(PAWN, 18, FIRST), 7, 7);
+    deployAPiece(&board, generateAPiece(PAWN, 19, FIRST), 7, 8);
+    deployAPiece(&board, generateAPiece(PAWN, 20, FIRST), 7, 9);
+
+    deployAPiece(&board, generateAPiece(KING, 21, SECOND), 1, 5);
+    deployAPiece(&board, generateAPiece(ROOK, 22, SECOND), 2, 8);
+    deployAPiece(&board, generateAPiece(BICHOP, 23, SECOND), 2, 2);
+    deployAPiece(&board, generateAPiece(GOLDGENERAL, 24, SECOND), 1, 4);
+    deployAPiece(&board, generateAPiece(GOLDGENERAL, 25, SECOND), 1, 6);
+    deployAPiece(&board, generateAPiece(SILVERGENERAL, 26, SECOND), 1, 3);
+    deployAPiece(&board, generateAPiece(SILVERGENERAL, 27, SECOND), 1, 7);
+    deployAPiece(&board, generateAPiece(KNIGHT, 28, SECOND), 1, 2);
+    deployAPiece(&board, generateAPiece(KNIGHT, 29, SECOND), 1, 8);
+    deployAPiece(&board, generateAPiece(LANCE, 30, SECOND), 1, 1);
+    deployAPiece(&board, generateAPiece(LANCE, 31, SECOND), 1, 9);
+    deployAPiece(&board, generateAPiece(PAWN, 32, SECOND), 3, 1);
+    deployAPiece(&board, generateAPiece(PAWN, 33, SECOND), 3, 2);
+    deployAPiece(&board, generateAPiece(PAWN, 34, SECOND), 3, 3);
+    deployAPiece(&board, generateAPiece(PAWN, 35, SECOND), 3, 4);
+    deployAPiece(&board, generateAPiece(PAWN, 36, SECOND), 3, 5);
+    deployAPiece(&board, generateAPiece(PAWN, 37, SECOND), 3, 6);
+    deployAPiece(&board, generateAPiece(PAWN, 38, SECOND), 3, 7);
+    deployAPiece(&board, generateAPiece(PAWN, 39, SECOND), 3, 8);
+    deployAPiece(&board, generateAPiece(PAWN, 40, SECOND), 3, 9);
     return board;
 }
 
@@ -148,9 +149,10 @@ void displayCondition(Condition condition)
         }
         else
         {
-            printf("\x1b[91m%s,\x1b[0m|", pieceToString(piece.piece));
+            printf("\x1b[91m%s,\x1b[0m", pieceToString(piece.piece));
         }
     }
+    printf("\n");
 }
 
 // 持ち駒の初期化
@@ -179,7 +181,7 @@ Address serchPieceFromBoard(Board board, APiece piece)
     for (int i = 0; i < NUMBER_OF_SQUARES; i++)
     {
         APiece apiece = board.squares[i].piece;
-        if (apiece.index == piece.index)
+        if (apiece.index == piece.index && apiece.piece.name != NON)
         {
             return board.squares[i].address;
         }
@@ -215,9 +217,9 @@ void deployPieceOnBoard(Board *board, Address address, APiece piece)
 }
 
 // 持ち駒の任意の場所に駒を設置する
-void deployPieceNotOnBoard(APiece *notOnBoard[NUMBER_OF_PIECES], int index, APiece piece)
+void deployPieceNotOnBoard(APiece notOnBoard[NUMBER_OF_PIECES], int index, APiece piece)
 {
-    *notOnBoard[index] = piece;
+    notOnBoard[index] = piece;
 }
 
 // 任意の位置にある駒が動くことが出来るか
@@ -225,22 +227,22 @@ bool ableMove(Turn turn, PieceName name, Address address)
 {
     if (turn == FIRST)
     {
-        if (name == KNIGHT && address.row > 7)
+        if (name == KNIGHT && address.row < 3)
         {
             return false;
         }
-        else if ((name == LANCE || name == PAWN) && address.row > 8)
+        else if ((name == LANCE || name == PAWN) && address.row < 2)
         {
             return false;
         }
     }
     else if (turn == SECOND)
     {
-        if (name == KNIGHT && address.row < 3)
+        if (name == KNIGHT && address.row > 7)
         {
             return false;
         }
-        else if ((name == LANCE || name == PAWN) && address.row < 2)
+        else if ((name == LANCE || name == PAWN) && address.row > 8)
         {
             return false;
         }
@@ -331,6 +333,31 @@ Square getSquareWhenMovedKnight(Board board, APiece piece, int row, int column, 
     }
 }
 
+// 二歩を検知
+bool isTwoSteps(Board board, APiece piece, Address address)
+{
+    if (piece.piece.name == PAWN)
+    {
+        for (int i = 0; i < NUMBER_OF_SQUARES; i++)
+        {
+            if (board.squares[i].address.column == address.column)
+            {
+                // 同じ行
+                if (board.squares[i].piece.piece.name == PAWN && board.squares[i].piece.turn == piece.turn)
+                {
+                    // 自分の歩
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    else
+    {
+        return false;
+    }
+}
+
 // 手を追加
 void addMoves(Move **moves, int *count, Address address, APiece piece)
 {
@@ -345,200 +372,114 @@ void addMoves(Move **moves, int *count, Address address, APiece piece)
     (*count)++;
 }
 
-// 特定のアドレスから任意の場所に移動し、指すことが出来る手を追加する
-void executeAddMoves(Move **pointableHands, int *count, Square square, Board board, Direction direction, Turn turn)
+// その場所に指すことができる手を追加する
+void serchAndAddMoves(Move **pointableHands, int *count, Square fromSquare, Square targetSquare, Turn turn)
 {
-    WayOfMove wayOfMove = square.piece.piece.wayOfMove[direction];
+    if (ableBe(fromSquare.address, targetSquare.address, fromSquare.piece))
+    {
+        // 成ることが出来る場合
+        if (ableMove(turn, fromSquare.piece.piece.name, targetSquare.address))
+        {
+            // 成らなくてもまだ、動くことが可能な場合
+            addMoves(pointableHands, count, targetSquare.address, fromSquare.piece);
+            APiece promotedPiece = fromSquare.piece;
+            promotedPiece.piece.name = getPieceNameAfterBecome(fromSquare.piece.piece);
+            promotedPiece.piece.promote = NOTPROMOTABLE;
+            addMoves(pointableHands, count, targetSquare.address, promotedPiece);
+        }
+        else
+        {
+            // 成らないと動くことが出来なくなる場合
+            APiece promotedPiece = fromSquare.piece;
+            promotedPiece.piece.name = getPieceNameAfterBecome(fromSquare.piece.piece);
+            promotedPiece.piece.promote = NOTPROMOTABLE;
+            addMoves(pointableHands, count, targetSquare.address, promotedPiece);
+        }
+    }
+    addMoves(pointableHands, count, targetSquare.address, fromSquare.piece);
+    return;
+}
+
+// 特定のアドレスから任意の場所に移動し、指すことが出来る手を追加する
+void executeAddMoves(Move **pointableHands, int *count, Square fromSquare, Board board, Direction direction, Turn turn)
+{
+    WayOfMove wayOfMove = fromSquare.piece.piece.wayOfMove[direction];
     if (wayOfMove.adirectionMove[0].maxLength == NUMBER_OF_EDGE - 1)
     {
-        for (int j = 1; j < NUMBER_OF_EDGE - 1; j++)
+        for (int j = 1; j < NUMBER_OF_EDGE; j++)
         {
-            Square square = getSquareWhenMoved(board, square.piece, square.address.row, square.address.column, j, direction);
+            Square targetSquare = getSquareWhenMoved(board, fromSquare.piece, fromSquare.address.row, fromSquare.address.column, j, direction);
 
             // 駒が置かれていたら停止
-            if (square.piece.piece.name != NON)
+            if (targetSquare.piece.piece.name != NON)
             {
                 // 置かれている駒が自分の駒の場合、その１つ前まで、置くことが出来る
                 // 置かれている駒が相手の駒の場合、そこまで置くことが出来る
-                if (square.piece.turn != square.piece.turn)
+                if (targetSquare.piece.turn != turn)
                 {
-                    if (ableBe(square.address, square.address, square.piece))
-                    {
-                        // 成ることが出来る場合
-                        if (ableMove(turn, square.piece.piece.name, square.address))
-                        {
-                            // 成らなくてもまだ、動くことが可能な場合
-                            addMoves(pointableHands, &count, square.address, square.piece);
-                            APiece promotedPiece = square.piece;
-                            promotedPiece.piece.name = getPieceNameAfterBecome(square.piece.piece);
-                            addMoves(pointableHands, &count, square.address, promotedPiece);
-                        }
-                        else
-                        {
-                            // 成らないと動くことが出来なくなる場合
-                            APiece promotedPiece = square.piece;
-                            promotedPiece.piece.name = getPieceNameAfterBecome(square.piece.piece);
-                            addMoves(pointableHands, &count, square.address, promotedPiece);
-                        }
-                    }
-                    addMoves(pointableHands, &count, square.address, square.piece);
+                    serchAndAddMoves(pointableHands, count, fromSquare, targetSquare, turn);
                 }
                 return;
             }
             // 盤面から外れたら停止
-            else if (square.address.row == 0 && square.address.column == 0)
+            else if (targetSquare.address.row == 0 && targetSquare.address.column == 0)
             {
                 return;
             }
             else
             {
-                if (ableBe(square.address, square.address, square.piece))
-                {
-                    // 成ることが出来る場合
-                    if (ableMove(turn, square.piece.piece.name, square.address))
-                    {
-                        // 成らなくてもまだ、動くことが可能な場合
-                        addMoves(pointableHands, &count, square.address, square.piece);
-                        APiece promotedPiece = square.piece;
-                        promotedPiece.piece.name = getPieceNameAfterBecome(square.piece.piece);
-                        addMoves(pointableHands, &count, square.address, promotedPiece);
-                    }
-                    else
-                    {
-                        // 成らないと動くことが出来なくなる場合
-                        APiece promotedPiece = square.piece;
-                        promotedPiece.piece.name = getPieceNameAfterBecome(square.piece.piece);
-                        addMoves(pointableHands, &count, square.address, promotedPiece);
-                    }
-                }
-                addMoves(pointableHands, &count, square.address, square.piece);
+                serchAndAddMoves(pointableHands, count, fromSquare, targetSquare, turn);
             }
         }
     }
     else if (wayOfMove.adirectionMove[1].maxLength == 1)
     {
-        Square square = getSquareWhenMoved(board, square.piece, square.address.row, square.address.column, 1, direction);
+        Square targetSquare = getSquareWhenMoved(board, fromSquare.piece, fromSquare.address.row, fromSquare.address.column, 1, direction);
 
         // 駒が置かれていたら停止
-        if (square.piece.piece.name != NON)
+        if (targetSquare.piece.piece.name != NON)
         {
             // 置かれている駒が自分の駒の場合、その１つ前まで、置くことが出来る
             // 置かれている駒が相手の駒の場合、そこまで置くことが出来る
-            if (square.piece.turn != square.piece.turn)
+            if (targetSquare.piece.turn != turn)
             {
-                if (ableBe(square.address, square.address, square.piece))
-                {
-                    // 成ることが出来る場合
-                    if (ableMove(turn, square.piece.piece.name, square.address))
-                    {
-                        // 成らなくてもまだ、動くことが可能な場合
-                        addMoves(pointableHands, &count, square.address, square.piece);
-                        APiece promotedPiece = square.piece;
-                        promotedPiece.piece.name = getPieceNameAfterBecome(square.piece.piece);
-                        addMoves(pointableHands, &count, square.address, promotedPiece);
-                    }
-                    else
-                    {
-                        // 成らないと動くことが出来なくなる場合
-                        APiece promotedPiece = square.piece;
-                        promotedPiece.piece.name = getPieceNameAfterBecome(square.piece.piece);
-                        addMoves(pointableHands, &count, square.address, promotedPiece);
-                    }
-                }
-                addMoves(pointableHands, &count, square.address, square.piece);
+                serchAndAddMoves(pointableHands, count, fromSquare, targetSquare, turn);
             }
             return;
         }
         // 盤面から外れたら停止
-        else if (square.address.row == 0 && square.address.column == 0)
+        else if (targetSquare.address.row == 0 && targetSquare.address.column == 0)
         {
             return;
         }
         else
         {
-            if (ableBe(square.address, square.address, square.piece))
-            {
-                // 成ることが出来る場合
-                if (ableMove(turn, square.piece.piece.name, square.address))
-                {
-                    // 成らなくてもまだ、動くことが可能な場合
-                    addMoves(pointableHands, &count, square.address, square.piece);
-                    APiece promotedPiece = square.piece;
-                    promotedPiece.piece.name = getPieceNameAfterBecome(square.piece.piece);
-                    addMoves(pointableHands, &count, square.address, promotedPiece);
-                }
-                else
-                {
-                    // 成らないと動くことが出来なくなる場合
-                    APiece promotedPiece = square.piece;
-                    promotedPiece.piece.name = getPieceNameAfterBecome(square.piece.piece);
-                    addMoves(pointableHands, &count, square.address, promotedPiece);
-                }
-            }
-            addMoves(pointableHands, &count, square.address, square.piece);
+            serchAndAddMoves(pointableHands, count, fromSquare, targetSquare, turn);
         }
     }
     else if (wayOfMove.adirectionMove[0].maxLength == 1)
     {
-        Square square = getSquareWhenMoved(board, square.piece, square.address.row, square.address.column, 1, direction);
+        Square targetSquare = getSquareWhenMoved(board, fromSquare.piece, fromSquare.address.row, fromSquare.address.column, 1, direction);
 
         // 駒が置かれていたら停止
-        if (square.piece.piece.name != NON)
+        if (targetSquare.piece.piece.name != NON)
         {
             // 置かれている駒が自分の駒の場合、その１つ前まで、置くことが出来る
             // 置かれている駒が相手の駒の場合、そこまで置くことが出来る
-            if (square.piece.turn != square.piece.turn)
+            if (targetSquare.piece.turn != turn)
             {
-                if (ableBe(square.address, square.address, square.piece))
-                {
-                    // 成ることが出来る場合
-                    if (ableMove(turn, square.piece.piece.name, square.address))
-                    {
-                        // 成らなくてもまだ、動くことが可能な場合
-                        addMoves(pointableHands, &count, square.address, square.piece);
-                        APiece promotedPiece = square.piece;
-                        promotedPiece.piece.name = getPieceNameAfterBecome(square.piece.piece);
-                        addMoves(pointableHands, &count, square.address, promotedPiece);
-                    }
-                    else
-                    {
-                        // 成らないと動くことが出来なくなる場合
-                        APiece promotedPiece = square.piece;
-                        promotedPiece.piece.name = getPieceNameAfterBecome(square.piece.piece);
-                        addMoves(pointableHands, &count, square.address, promotedPiece);
-                    }
-                }
-                addMoves(pointableHands, &count, square.address, square.piece);
+                serchAndAddMoves(pointableHands, count, fromSquare, targetSquare, turn);
             }
             return;
         }
         // 盤面から外れたら停止
-        else if (square.address.row == 0 && square.address.column == 0)
+        else if (targetSquare.address.row == 0 && targetSquare.address.column == 0)
         {
             return;
         }
         else
         {
-            if (ableBe(square.address, square.address, square.piece))
-            {
-                // 成ることが出来る場合
-                if (ableMove(turn, square.piece.piece.name, square.address))
-                {
-                    // 成らなくてもまだ、動くことが可能な場合
-                    addMoves(pointableHands, &count, square.address, square.piece);
-                    APiece promotedPiece = square.piece;
-                    promotedPiece.piece.name = getPieceNameAfterBecome(square.piece.piece);
-                    addMoves(pointableHands, &count, square.address, promotedPiece);
-                }
-                else
-                {
-                    // 成らないと動くことが出来なくなる場合
-                    APiece promotedPiece = square.piece;
-                    promotedPiece.piece.name = getPieceNameAfterBecome(square.piece.piece);
-                    addMoves(pointableHands, &count, square.address, promotedPiece);
-                }
-            }
-            addMoves(pointableHands, &count, square.address, square.piece);
+            serchAndAddMoves(pointableHands, count, fromSquare, targetSquare, turn);
         }
     }
 }
@@ -575,11 +516,11 @@ int serchPointableHands(Condition condition, Move **pointableHands)
             {
                 Address address = {j / 9 + 1, j % 9 + 1};
                 // 駒が置かれていない場所
-                if (piece.piece.name == NON)
+                if (condition.board.squares[j].piece.piece.name == NON)
                 {
                     // 動けない場合
                     PieceName name = piece.piece.name;
-                    if (ableMove(condition.turn, name, address))
+                    if (!ableMove(condition.turn, name, address) || isTwoSteps(condition.board, piece, address))
                     {
                         continue;
                     }
@@ -607,7 +548,7 @@ void executeMove(Condition *condition, Move move)
     int notOnBoardIndex = serchPieceFromNotOnBoard((*condition).notOnBoard, move.piece);
     if (notOnBoardIndex != -1)
     {
-        deployPieceNotOnBoard(&(*condition).notOnBoard, notOnBoardIndex, generateAPiece(NON, 0, FIRST));
+        deployPieceNotOnBoard((*condition).notOnBoard, notOnBoardIndex, generateAPiece(NON, 0, FIRST));
     }
 
     // 駒を設置し、すでに設置されている駒があった場合は、持ち駒の空いている場所に移す
@@ -620,6 +561,9 @@ void executeMove(Condition *condition, Move move)
             {
                 // すでに設置されている駒があった場合は、持ち駒の空いている場所に移す
                 int ind = serchPieceFromNotOnBoard((*condition).notOnBoard, generateAPiece(NON, 0, FIRST));
+                (*square).piece.turn = !(*square).piece.turn;
+                (*square).piece.piece.name = getPieceNameBeforeBecome((*square).piece.piece);
+                (*square).piece.piece.promote = getPromoteByPieceName((*square).piece.piece.name);
                 deployPieceNotOnBoard((*condition).notOnBoard, ind, (*square).piece);
             }
             
@@ -627,4 +571,19 @@ void executeMove(Condition *condition, Move move)
             deployPieceOnBoard(&(*condition).board, move.address, move.piece);
         }
     }
+}
+
+// 終了判定
+bool isEnd(Condition condition, Turn *winner)
+{
+    for (int i = 0; i < NUMBER_OF_PIECES; i++)
+    {
+        if (condition.notOnBoard[i].piece.name == KING)
+        {
+            // 王が持ち駒に見つかったら終了
+            *winner = condition.notOnBoard[i].turn;
+            return true;
+        }
+    }
+    return false;
 }
