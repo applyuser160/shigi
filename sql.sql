@@ -1,5 +1,5 @@
 create table shogi.Node (
-  ID int(10) not null auto_increment
+  ID varchar(100) not null
   , parentID int(10) not null 
   , turnNumber int(10) not null 
   , `row` int(10) not null 
@@ -12,3 +12,5 @@ create table shogi.Node (
   , secondWinCount int(10) not null 
   , constraint Node_PKC primary key (ID)
 ) comment 'Node' ;
+
+ALTER TABLE shogi.Node MODIFY COLUMN ID VARCHAR(100);

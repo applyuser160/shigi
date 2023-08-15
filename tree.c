@@ -30,17 +30,44 @@
         _struct._key = json_object_dotget_boolean(_json, #_key); \
     } while (0);
 
+char randChar()
+{
+    char c = (char)randBetween(61, 0);
+    if (c > 35)
+    {
+        c += 61;
+    }
+    else if (c > 9)
+    {
+        c += 55;
+    }
+    else
+    {
+        c += 48;
+    }
+    return c;
+}
+
 char* generateUUID()
 {
-    
+    char uuid[36];
+    for (int i = 0; i < 36; i++)
+    {
+        if (i == 12 || i == 16 || i == 20 || i == 24)
+        {
+            uuid[i] = 45;
+        }
+        else
+        {
+            uuid[i] = randChar();
+        }
+    }
 }
 
 void initNode(Node **node)
 {
-    uuid_t value;
-    uuid_generate(value);
     struct Node *one = (struct Node *)calloc(1, sizeof(Node));
-    // (*one).id = uuid_t
+    (*one).id = generateUUID();
     (*one).parent = NULL;
     (*one).childCount = 0;
     (*one).child = NULL;
@@ -202,7 +229,7 @@ int deployNode(Node *child, Node *parent)
     {
         // printf("deploy1\n");
         // childNodeにparentにparentNodeを設定
-        (*child).parentID = (*parent).id;
+        (*child).parentId = (*parent).id;
         (*child).parent = parent;
         // printf("deploy2\n");
 
@@ -290,7 +317,7 @@ void createNodeFromPossiblePlace(struct Node *node, Condition condition)
     for (int i = 0; i < pointableHandsCount; i++)
     {
         // printf("[%d]a\n", i);
-        int id;
+        char* id;
         bool hasCreated = false;
         for (int j = 0; j < (*node).childCount; j++)
         {

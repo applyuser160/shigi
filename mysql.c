@@ -32,10 +32,10 @@ void setNode(Node *node, MYSQL_ROW mysql_row, unsigned int fields)
         switch (col)
         {
         case ID:
-            (*node).id = atoi(mysql_row[col]);
+            (*node).id = mysql_row[col];
             break;
         case PARENTID:
-            (*node).parentID = atoi(mysql_row[col]);
+            (*node).parentId = mysql_row[col];
             break;
         case TURNNUMBER:
             (*node).turnNumber = atoi(mysql_row[col]);
@@ -201,11 +201,10 @@ void selectq(Node **node, char* query)
 }
 
 // INSERT
-int insert(char* query)
+void insert(char* query)
 {
     Node **node;
     base(node, query, INSERT);
-    return getLastInsertedID();
 }
 
 // UPDATE
@@ -216,16 +215,17 @@ void update(char* query)
 }
 
 // INSERT from Node
-int insertFromNode(Node node)
+char* insertFromNode(Node node)
 {
     char values[256];
-    sprintf(values, "(%d, %d, %d, %d, %d, %d, %d, %d, %d, %d)", \
-        node.parentID, node.turnNumber, node.move.address.row, node.move.address.column, node.move.piece.piece.name, node.move.piece.index, \
+    sprintf(values, "(%s, %s, %d, %d, %d, %d, %d, %d, %d, %d, %d)", \
+        node.id, node.parentId, node.turnNumber, node.move.address.row, node.move.address.column, node.move.piece.piece.name, node.move.piece.index, \
         node.throughCount, node.drawCount, node.fiWinCount, node.seWinCount);
     char query[256];
-    sprintf(query, "insert into jdbctestdb.Node(parentID, turnNumber, `row`, `column`, pieceName, pieceID, throughCount, drawCount, firstWinCount, secondWinCount)values %s;", values);
+    sprintf(query, "insert into jdbctestdb.Node(ID, parentID, turnNumber, `row`, `column`, pieceName, pieceID, throughCount, drawCount, firstWinCount, secondWinCount)values %s;", values);
     printf("%s\n", query);
-    return insert(query);
+    insert(query);
+    return node.id;
 }
 
 // // MULTI INSERT 追加したIDの取得部分を実装していない
@@ -253,7 +253,7 @@ void updateFromNode(Node node)
     char query[256];
     sprintf(query, "update jdbctestdb.Node set \
         turnNumber = %d, `row` = %d, `column` = %d, pieceName = %d, pieceID = %d, \
-        throughCount = %d, drawCount = %d, firstWinCount = %d, secondWinCount = %d where ID = %d;",\
+        throughCount = %d, drawCount = %d, firstWinCount = %d, secondWinCount = %d where ID = '%s';",\
         node.turnNumber, node.move.address.row, node.move.address.column, node.move.piece.piece.name, node.move.piece.index, \
         node.throughCount, node.drawCount, node.fiWinCount, node.seWinCount, node.id);
     Node **n;
@@ -261,18 +261,18 @@ void updateFromNode(Node node)
 }
 
 // SELECT where ID
-void selectWhereID(Node **node, int ID)
+void selectWhereID(Node **node, char* ID)
 {
     char query[256];
-    sprintf(query, "select * from jdbctestdb.Node where ID = %d;", ID);
+    sprintf(query, "select * from jdbctestdb.Node where ID = '%s';", ID);
     selectq(node, query);
 }
 
 // SELECT where parentID
-void selectWhereParentID(Node **node, int parentID)
+void selectWhereParentID(Node **node, char* parentID)
 {
     char query[256];
-    sprintf(query, "select * from jdbctestdb.Node where parentID = %d;", parentID);
+    sprintf(query, "select * from jdbctestdb.Node where parentID = '%s';", parentID);
     printf("%s\n", query);
     selectq(node, query);
 }

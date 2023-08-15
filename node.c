@@ -4,10 +4,10 @@
 typedef struct Node
 {
     // ID
-    int id;
+    char *id;
 
     // parentID
-    int parentID;
+    char *parentId;
 
     // 前のノード
     struct Node *parent;
