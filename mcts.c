@@ -10,19 +10,20 @@ void learn(void)
 {
     // モンテカルロ木
     Node *tree;
-    jsonParse("output2.json", &tree);
+    // jsonParse("output2.json", &tree);
     // outputTree(*tree);
-    // initNode(&tree);
-
-    // printf("top:%p\n", tree);
-    // printf("child:%p\n", (*tree).child);
+    initNode(&tree);
+    printf("a\n");
+    (*tree).id = insertFromNode(*tree);
+    printf("id:%d\n", (*tree).id);
+    printf("lsid:%d\n", getLastInsertedID());
 
     for (int i = 0; i < NUMBER_OF_SEARCH; i++)
     {
         // 盤面
         Condition condition = initCondition();
 
-        // displayCondition(condition);
+        displayCondition(condition);
 
         Node *currentNode = tree;
 
@@ -37,13 +38,16 @@ void learn(void)
 
         while (1)
         {
+            // printf("serch\n");
             // UCBにより、手を評価し、選択する
-            // printf("a\n");
             createNodeFromPossiblePlace(currentNode, condition);
-            // printf("b\n");
-            Move nextMove = (*(*currentNode).child[ucb(*currentNode, i, condition.turn)]).move;
-            // Move nextMove = (*(*currentNode).child[randBetween((*currentNode).childCount - 1,0)]).move;
-            // printf("c\n");
+            // printf("serch\n");
+            int selected = ucb(*currentNode, i, condition.turn);
+            // int selected = randBetween((*currentNode).childCount - 1,0);
+            Move nextMove = (*(*currentNode).child[selected]).move;
+
+            // 選択されたノードを除いてメモリ開放
+            freeChildNode(currentNode, selected);
 
             // 手を指す
             executeMove(&condition, nextMove);
@@ -53,16 +57,15 @@ void learn(void)
             condition.turnNumber++;
 
             // 新たなノードを作成
-            Node *node;
-            initNode(&node);
+            Node *node = (*currentNode).child[selected];
             (*node).turnNumber = condition.turnNumber;
             (*node).move = nextMove;
             
-            // 新たなノードを現在のノードの下に設置（まだ作成されていないノードの場合）
-            int nextIndex = deployNode(node, currentNode);
+            // データベースに反映
+            updateFromNode(*node);
 
             // 現在のノードを移動
-            currentNode = (*currentNode).child[nextIndex];
+            currentNode = (*currentNode).child[selected];
 
             // 終了判定
             if (!isEnd(condition, &winner) || condition.turnNumber > 500)
@@ -104,6 +107,8 @@ void learn(void)
             {
                 currentNode = (*currentNode).parent;
             }
+            // データベースに反映
+            updateFromNode(*currentNode);
         }
         printf("serch turn:%d\n", i);
     }

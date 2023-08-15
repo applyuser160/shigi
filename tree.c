@@ -6,10 +6,10 @@
 #include <unistd.h>
 #include <tchar.h>
 #include <math.h>
-#include "game.c"
+#include "mysql.c"
 #include "parson.c"
 
-#define NUMBER_OF_SEARCH 100
+#define NUMBER_OF_SEARCH 10
 #define NUMBER_OF_CHARACTERS_FOR_A_NODE 235
 
 #define JSON2STRUCT_STR(_json, _struct, _key, _size)                           \
@@ -30,40 +30,17 @@
         _struct._key = json_object_dotget_boolean(_json, #_key); \
     } while (0);
 
-// モンテカルロ木のノード
-typedef struct Node
+char* generateUUID()
 {
-    // 前のノード
-    struct Node *parent;
-
-    // 次のノード数
-    int childCount;
-
-    // 次のノード
-    struct Node **child;
-
-    // ターン数
-    int turnNumber;
-
-    // 指し手
-    Move move;
-
-    // 通過数
-    int throughCount;
-
-    // 引分数
-    int drawCount;
-
-    // 勝利数 FIRST
-    int fiWinCount;
-
-    // 勝利数 SECOND
-    int seWinCount;
-} Node;
+    
+}
 
 void initNode(Node **node)
 {
+    uuid_t value;
+    uuid_generate(value);
     struct Node *one = (struct Node *)calloc(1, sizeof(Node));
+    // (*one).id = uuid_t
     (*one).parent = NULL;
     (*one).childCount = 0;
     (*one).child = NULL;
@@ -96,9 +73,17 @@ bool equalAddress(Address left, Address right)
 }
 
 bool equalAPiece(APiece left, APiece right)
-
 {
     return left.index == right.index && left.piece.name == right.piece.name;
+}
+
+bool equalMove(Move left, Move right)
+{
+    printf("eq\n");
+    printf("rightad:%d,%d\n", right.address.row, right.address.column);
+    printf("leftad:%d,%d\n", left.address.row, left.address.column);
+    
+    return equalAddress(left.address, right.address) && equalAPiece(left.piece, right.piece);
 }
 
 // ノードが既に作成済みの場合インデックスを返す
@@ -106,13 +91,7 @@ int isCreated(Node *child, Node *parent)
 {
     for (int i = 0; i < (*parent).childCount; i++)
     {
-        // printf("isCreated[%d]\n", i);
-        // printf("parent:%p\n", (*parent).child);
-        bool addEq = equalAddress((*(*parent).child[i]).move.address, (*child).move.address);
-        // printf("add:%d\n", addEq);
-        bool turnEq = equalAPiece((*(*parent).child[i]).move.piece, (*child).move.piece);
-        // printf("add:%d,turn:%d\n", addEq, turnEq);
-        if (addEq && turnEq)
+        if (equalMove((*(*parent).child[i]).move, (*child).move))
         {
             return i;
         }
@@ -223,6 +202,7 @@ int deployNode(Node *child, Node *parent)
     {
         // printf("deploy1\n");
         // childNodeにparentにparentNodeを設定
+        (*child).parentID = (*parent).id;
         (*child).parent = parent;
         // printf("deploy2\n");
 
@@ -302,21 +282,57 @@ void createNodeFromPossiblePlace(struct Node *node, Condition condition)
 {
     Move *pointableHands;
     int pointableHandsCount = serchPointableHands(condition, &pointableHands);
-    // printf("cnfp:%p\n", node);
+
+    // データベースより子ノードの取得
+    Node* child;
+    selectWhereParentID(&child, (*node).id);
 
     for (int i = 0; i < pointableHandsCount; i++)
     {
-        // printf("create1[%d]\n", i);
+        // printf("[%d]a\n", i);
+        int id;
+        bool hasCreated = false;
+        for (int j = 0; j < (*node).childCount; j++)
+        {
+            // printf("move%p\n", child);
+            // printf("child%d\n", (*child[i]).move.address.row);
+            if (equalMove((child[i]).move, pointableHands[i]))
+            {
+                // printf("y\n");
+                hasCreated = true;
+                id = (child[i]).id;
+            }
+        }
+
+        // printf("[%d]b\n", i);
         Node *newNode;
-        // printf("create2[%d]\n", i);
         initNode(&newNode);
         (*newNode).turnNumber = (*node).turnNumber + 1;
         (*newNode).move.address.row = pointableHands[i].address.row;
         (*newNode).move.address.column = pointableHands[i].address.column;
         (*newNode).move.piece = pointableHands[i].piece;
+        // printf("[%d]c\n", i);
 
-        // printf("create3[%d]\n", i);
         deployNode(newNode, node);
-        // printf("create4[%d]\n", i);
+
+        if (!hasCreated)
+        {
+            id = insertFromNode(*newNode);
+        }
+        (*newNode).id = id;
+        // printf("[%d]d\n", i);
     }
 }
+
+// 子のノードの内、１つを除いて、メモリを開放する
+void freeChildNode(Node *node, int index)
+{
+    for (int i = 0; i < (*node).childCount; i++)
+    {
+        if (i != index)
+        {
+            free((*node).child[i]);
+        }
+    }
+}
+
