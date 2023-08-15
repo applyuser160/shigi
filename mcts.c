@@ -38,10 +38,8 @@ void learn(void)
 
         while (1)
         {
-            // printf("serch\n");
             // UCBにより、手を評価し、選択する
             createNodeFromPossiblePlace(currentNode, condition);
-            // printf("serch\n");
             int selected = ucb(*currentNode, i, condition.turn);
             // int selected = randBetween((*currentNode).childCount - 1,0);
             Move nextMove = (*(*currentNode).child[selected]).move;
@@ -51,7 +49,6 @@ void learn(void)
 
             // 手を指す
             executeMove(&condition, nextMove);
-            // displayCondition(condition);
 
             // ターン数の加算
             condition.turnNumber++;
@@ -75,8 +72,6 @@ void learn(void)
             }
             else
             {
-                // printf("turn%d\n", condition.turnNumber);
-                // printf("winner %d\n", winner);
                 break;
             }
         }
@@ -115,11 +110,7 @@ void learn(void)
 
     printf("tree created\n");
 
-    outputTree("output2.json", *tree);
-
     free(tree);
-
-    printf("json file created\n");
 
     printf("end\n");
 

@@ -17,7 +17,6 @@ int randBetween(int max, int min)
 void game()
 {
     Condition condition = initCondition();
-    // displayCondition(condition);
     Move *pointableHands;
     int fc;
     Turn winner;

@@ -108,21 +108,15 @@ void base(Node **node, char* query, SQL_TYPE type)
     /* 結果の処理 */
     if (type == SELECT)
     {
-        // printf("result01\n");
         unsigned long long rows = mysql_num_rows(res);
         Node *result = (Node *)calloc(rows, sizeof(Node));
         for (int i = 0; i < rows; i++)
         {
             row = mysql_fetch_row(res);
-            // printf("result[%d]02\n", i);
             unsigned int fields = mysql_num_fields(res);
-            // printf("result[%d]03\n", i);
             setNode(&result[i], row, fields);
-            // printf("result[%d]04\n", i);
         }
-        // printf("result05\n");
         *node = result;
-        // printf("result06\n");
     }
 
     /* 構造体の解放処理 */

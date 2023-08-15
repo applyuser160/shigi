@@ -178,17 +178,11 @@ struct Node* convertNode(JSON_Object *json)
     (*node).move.address.column = json_object_get_number(json, "column");
     (*node).move.piece.piece.name = json_object_get_number(json, "pieceName");
     (*node).move.piece.index = json_object_get_number(json, "index");
-    // JSON2STRUCT_NUM(json, (*node), move.address.row);
-    // JSON2STRUCT_NUM(json, (*node), move.address.column);
-    // JSON2STRUCT_NUM(json, (*node), move.piece.piece.name);
-    // printf("name:%d\n", (*node).move.piece.piece.name);
-    // JSON2STRUCT_NUM(json, (*node), move.piece.index);
     JSON2STRUCT_NUM(json, (*node), throughCount);
     JSON2STRUCT_NUM(json, (*node), drawCount);
     JSON2STRUCT_NUM(json, (*node), fiWinCount);
     JSON2STRUCT_NUM(json, (*node), seWinCount);
     JSON2STRUCT_NUM(json, (*node), childCount);
-    // printf("childc:%d\n", (*node).childCount);
     JSON_Array *childJson = json_object_get_array(json, "child");
     (*node).child = (struct Node **)calloc((*node).childCount, sizeof(Node*));
     for (int o = 0; o < (*node).childCount; o++)
@@ -197,10 +191,8 @@ struct Node* convertNode(JSON_Object *json)
     }
     for (int i = 0; i < (*node).childCount; i++)
     {
-        // printf("pointer[%d]:%p\n", i, node.child[i]);
         (*node).child[i] = convertNode(json_array_get_object(childJson, i));
         (*(*node).child[i]).parent = node;
-        // printf("ppointer[%d]:%p\n", i, (*node.child[i]).parent);
     }
     return node;
 }
@@ -222,46 +214,36 @@ void jsonParse(char* filename, Node **node)
 // 次のノードのインデックスを返す
 int deployNode(Node *child, Node *parent)
 {
-    // printf("start\n");
     int index = isCreated(child, parent);
-    // printf("index:%d\n", index);
     if (index == -1)
     {
-        // printf("deploy1\n");
         // childNodeにparentにparentNodeを設定
         (*child).parentId = (*parent).id;
         (*child).parent = parent;
-        // printf("deploy2\n");
 
         // 次のノード数をインクリメント
         (*parent).childCount++;
-        // printf("deploy3\n");
 
         // 現在の次のノードを一時的に移す
         Node **old = (*parent).child;
-        // printf("deploy4\n");
 
         // 新しい領域を確保（２階層のうちの１階層目）
         (*parent).child = (Node **)calloc((*parent).childCount, sizeof(Node*));
-        // printf("deploy5\n");
 
         // 確保した領域に、既存のアドレスをセット
         for (int o = 0; o < (*parent).childCount - 1; o++)
         {
             (*parent).child[o] = old[o];
         }
-        // printf("deploy6\n");
 
         // 確保した領域の最後に、新規のノードをセット
         (*parent).child[(*parent).childCount - 1] = child;
-        // printf("deploy7\n");
 
         return (*parent).childCount - 1;
     }
     else
     {
         free(child);
-        // printf("newNode free\n");
         return index;
     }
 }
@@ -316,29 +298,23 @@ void createNodeFromPossiblePlace(struct Node *node, Condition condition)
 
     for (int i = 0; i < pointableHandsCount; i++)
     {
-        // printf("[%d]a\n", i);
         char* id;
         bool hasCreated = false;
         for (int j = 0; j < (*node).childCount; j++)
         {
-            // printf("move%p\n", child);
-            // printf("child%d\n", (*child[i]).move.address.row);
             if (equalMove((child[i]).move, pointableHands[i]))
             {
-                // printf("y\n");
                 hasCreated = true;
                 id = (child[i]).id;
             }
         }
 
-        // printf("[%d]b\n", i);
         Node *newNode;
         initNode(&newNode);
         (*newNode).turnNumber = (*node).turnNumber + 1;
         (*newNode).move.address.row = pointableHands[i].address.row;
         (*newNode).move.address.column = pointableHands[i].address.column;
         (*newNode).move.piece = pointableHands[i].piece;
-        // printf("[%d]c\n", i);
 
         deployNode(newNode, node);
 
@@ -347,7 +323,6 @@ void createNodeFromPossiblePlace(struct Node *node, Condition condition)
             id = insertFromNode(*newNode);
         }
         (*newNode).id = id;
-        // printf("[%d]d\n", i);
     }
 }
 
