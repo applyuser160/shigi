@@ -8,6 +8,7 @@
 
 int main(void)
 {
+    printf("a\n");
     // game();
     learn();
     return 0;

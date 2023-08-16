@@ -9,6 +9,7 @@
 int randBetween(int max, int min)
 {
     struct timeval t1;
+    usleep(1);
     mingw_gettimeofday(&t1, NULL);
     srand(t1.tv_usec * t1.tv_sec);
     return (rand()%(max - min + 1)) + min;

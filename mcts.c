@@ -8,24 +8,34 @@
 
 void learn(void)
 {
+    printf("start\n");
     // モンテカルロ木
     Node *tree;
-    // jsonParse("output2.json", &tree);
-    // outputTree(*tree);
-    initNode(&tree);
-    printf("a\n");
-    (*tree).id = insertFromNode(*tree);
-    printf("id:%d\n", (*tree).id);
-    printf("lsid:%d\n", getLastInsertedID());
+    printf("start\n");
+
+    // 既にトップノードが作成済みの場合
+    char* topNodeId = "sZG6neL2-sZQ7-oeLC-tjQ7-yfVZG7xeVL2t-524566";
+    printf("%s\n", topNodeId);
+    selectWhereID(&tree, topNodeId);
+
+    // // まだトップノードが作成されていない場合
+    // initNode(&tree);
+    // insertFromNode(*tree);
+    // char* topNodeId = (*tree).id;
+    printf("idp:%p\n", tree);
+    // printf("id:%s\n", (*tree).id);
+
+    
 
     for (int i = 0; i < NUMBER_OF_SEARCH; i++)
     {
         // 盤面
         Condition condition = initCondition();
 
-        displayCondition(condition);
+        // displayCondition(condition);
 
-        Node *currentNode = tree;
+        Node *currentNode;
+        selectWhereID(&currentNode, topNodeId);
 
         // ターンナンバー
         int turnNumber = 0;
@@ -38,17 +48,21 @@ void learn(void)
 
         while (1)
         {
+
             // UCBにより、手を評価し、選択する
             createNodeFromPossiblePlace(currentNode, condition);
-            int selected = ucb(*currentNode, i, condition.turn);
-            // int selected = randBetween((*currentNode).childCount - 1,0);
+            // int selected = ucb(*currentNode, i, condition.turn);
+            int selected = randBetween((*currentNode).childCount - 1,0);
             Move nextMove = (*(*currentNode).child[selected]).move;
 
             // 選択されたノードを除いてメモリ開放
-            freeChildNode(currentNode, selected);
+            // freeChildNode(currentNode, selected);
+            // free((*currentNode).child);
 
             // 手を指す
             executeMove(&condition, nextMove);
+
+            // displayCondition(condition);
 
             // ターン数の加算
             condition.turnNumber++;
@@ -98,13 +112,16 @@ void learn(void)
                 }
             }
 
-            if ((*currentNode).turnNumber > 0)
-            {
-                currentNode = (*currentNode).parent;
-            }
             // データベースに反映
             updateFromNode(*currentNode);
+
+            if ((*currentNode).turnNumber > 0)
+            {
+                printf("currentnodep:%s\n", (*currentNode).parentId);
+                selectWhereID(&currentNode, (*currentNode).parentId);
+            }
         }
+        free(currentNode);
         printf("serch turn:%d\n", i);
     }
 

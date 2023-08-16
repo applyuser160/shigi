@@ -3,6 +3,8 @@
 #include "node.c"
 #include "mysql-8.1.0-winx64/include/mysql.h" /* MySQLを利用するための構造体の定義などが書かれたヘッダファイル */
 
+#define DBNAME "shogi" //"jdbctestdb"
+
 typedef enum SQL_TYPE
 {
     SELECT = 1,
@@ -65,23 +67,23 @@ void setNode(Node *node, MYSQL_ROW mysql_row, unsigned int fields)
             (*node).seWinCount = atoi(mysql_row[col]);
             break;
         }
-        printf("%s ", mysql_row[col]);
+        // printf("%s ", mysql_row[col]);
     }
     (*node).move.piece = generateAPiece((*node).move.piece.piece.name, (*node).move.piece.index, (*node).turnNumber % 2 == 1);
-    printf("\r\n");
+    // printf("\r\n");
 }
 
-void base(Node **node, char* query, SQL_TYPE type)
+int base(Node **node, char* query, int queryLength, SQL_TYPE type)
 {
     MYSQL *conn; /* MySQLとの接続を表す構造体 */
     MYSQL_RES *res; /* SELECT文（など）の結果を表す構造体 */
     MYSQL_ROW row; /* MYSQL_RESの中の1レコードを示す構造体 */
 
-    const char *SERV = "192.168.20.31"; /* MySQLが設置してあるサーバのIPアドレスorホスト名 */
-    const char *USER = "root"; /* MySQLにアクセスする際のユーザ名 */
-    const char *PASSWORD = "P@ssw0rd01"; /* MySQLにアクセスする際にパスワード */
-    const char *DB_NAME = "jdbctestdb"; /* 接続先のMySQLで使用するデータベース名 */
-    const unsigned int PORT = 3306; /* 接続先のサーバでMySQLが稼働しているポート番号 */
+    const char *SERV = "192.168.0.220"; //"192.168.20.31"
+    const char *USER = "root"; //"root"
+    const char *PASSWORD = "root"; //"P@ssw0rd01"
+    const char *DB_NAME = "shogi"; //"jdbctestdb"
+    const unsigned int PORT = 3306; 
 
     conn = mysql_init(NULL); /* 接続の初期化 */
     mysql_options(conn, MYSQL_SET_CHARSET_NAME, "cp932"); /* オプション設定。今回は文字コードの設定をcp932に設定している。 */
@@ -91,14 +93,14 @@ void base(Node **node, char* query, SQL_TYPE type)
     /* 接続 */
     /* mysql_real_connect()関数：MySQLと接続を開始 */
     if( !mysql_real_connect(conn,SERV,USER,PASSWORD,DB_NAME,PORT,NULL,0) ){
-        fprintf(stderr, "%s\r\n", mysql_error(conn)); /* エラーが発生した場合、標準エラー出力に内容を表示 */
+        fprintf(stderr, "c%s\r\n", mysql_error(conn)); /* エラーが発生した場合、標準エラー出力に内容を表示 */
         exit(-1);
     }
  
     /* query実行 */
     /* mysql_query()関数：queryを実行 */
     if( mysql_query( conn, query) ){
-        fprintf(stderr, "%s\r\n", mysql_error(conn));
+        fprintf(stderr, "e%s\nsql:%s\r\n", mysql_error(conn), query);
         exit(-1);
     }
     /* 結果を取得 */
@@ -106,6 +108,7 @@ void base(Node **node, char* query, SQL_TYPE type)
     res = mysql_store_result(conn);
  
     /* 結果の処理 */
+    int resultCount;
     if (type == SELECT)
     {
         unsigned long long rows = mysql_num_rows(res);
@@ -117,6 +120,7 @@ void base(Node **node, char* query, SQL_TYPE type)
             setNode(&result[i], row, fields);
         }
         *node = result;
+        resultCount = rows;
     }
 
     /* 構造体の解放処理 */
@@ -130,143 +134,107 @@ void base(Node **node, char* query, SQL_TYPE type)
     if(NULL != conn){
         mysql_close(conn);
     }
-}
 
-// 追加したレコードのIDを取得
-int getLastInsertedID()
-{
-    MYSQL *conn; /* MySQLとの接続を表す構造体 */
-    MYSQL_RES *res; /* SELECT文（など）の結果を表す構造体 */
-    MYSQL_ROW row; /* MYSQL_RESの中の1レコードを示す構造体 */
+    memset(query, 0, queryLength * sizeof(char));
 
-    char* query = "SELECT distinct LAST_INSERT_ID() from jdbctestdb.Node;";
-
-    const char *SERV = "192.168.20.31"; /* MySQLが設置してあるサーバのIPアドレスorホスト名 */
-    const char *USER = "root"; /* MySQLにアクセスする際のユーザ名 */
-    const char *PASSWORD = "P@ssw0rd01"; /* MySQLにアクセスする際にパスワード */
-    const char *DB_NAME = "jdbctestdb"; /* 接続先のMySQLで使用するデータベース名 */
-    const unsigned int PORT = 3306; /* 接続先のサーバでMySQLが稼働しているポート番号 */
-
-    conn = mysql_init(NULL); /* 接続の初期化 */
-    mysql_options(conn, MYSQL_SET_CHARSET_NAME, "cp932"); /* オプション設定。今回は文字コードの設定をcp932に設定している。 */
-    int ssl_mode = SSL_MODE_DISABLED;
-    mysql_options(conn, MYSQL_OPT_SSL_MODE, &ssl_mode); //ssl-mode=DISABLED
- 
-    /* 接続 */
-    /* mysql_real_connect()関数：MySQLと接続を開始 */
-    if( !mysql_real_connect(conn,SERV,USER,PASSWORD,DB_NAME,PORT,NULL,0) ){
-        fprintf(stderr, "%s\r\n", mysql_error(conn)); /* エラーが発生した場合、標準エラー出力に内容を表示 */
-        exit(-1);
-    }
- 
-    /* query実行 */
-    /* mysql_query()関数：queryを実行 */
-    if( mysql_query( conn, query) ){
-        fprintf(stderr, "%s\r\n", mysql_error(conn));
-        exit(-1);
-    }
-    /* 結果を取得 */
-    /* mysql_use_result()関数：queryの実行結果全体を取得 */
-    res = mysql_store_result(conn);
- 
-    /* 結果の処理 */
-    unsigned long long rows = mysql_num_rows(res);
-    int result;
-    row = mysql_fetch_row(res);
-    result = atoi(row[0]);
-
-    /* 構造体の解放処理 */
-    /* mysql_free_result()関数：検索結果を保持している構造体のメモリを解放 */
-    if(NULL != res){
-        mysql_free_result(res);
-    }
- 
-    /* 接続の解放処理 */
-    /* mysql_close()関数：mysqlとの接続を切断 */
-    if(NULL != conn){
-        mysql_close(conn);
-    }
+    return resultCount;
 }
 
 // SELECT
-void selectq(Node **node, char* query)
+int selectq(Node **node, char query[256])
 {
-    base(node, query, SELECT);
+    return base(node, query, 256, SELECT);
 }
 
 // INSERT
-void insert(char* query)
+void insert(char query[256])
 {
     Node **node;
-    base(node, query, INSERT);
+    base(node, query, 256, INSERT);
 }
 
 // UPDATE
-void update(char* query)
+void update(char query[256])
 {
     Node **node;
-    base(node, query, UPDATE);
+    base(node, query, 256, UPDATE);
 }
 
 // INSERT from Node
 char* insertFromNode(Node node)
 {
     char values[256];
-    sprintf(values, "(%s, %s, %d, %d, %d, %d, %d, %d, %d, %d, %d)", \
+    sprintf(values, "('%s', '%s', %d, %d, %d, %d, %d, %d, %d, %d, %d)", \
         node.id, node.parentId, node.turnNumber, node.move.address.row, node.move.address.column, node.move.piece.piece.name, node.move.piece.index, \
         node.throughCount, node.drawCount, node.fiWinCount, node.seWinCount);
     char query[256];
-    sprintf(query, "insert into jdbctestdb.Node(ID, parentID, turnNumber, `row`, `column`, pieceName, pieceID, throughCount, drawCount, firstWinCount, secondWinCount)values %s;", values);
-    printf("%s\n", query);
+    sprintf(query, "insert into %s.Node(ID, parentID, turnNumber, `row`, `column`, pieceName, pieceID, throughCount, drawCount, firstWinCount, secondWinCount)values %s;", DBNAME, values);
+    // printf("%s\n", query);
     insert(query);
+    memset(query, 0, 256 * sizeof(char));
+    memset(values, 0, 256 * sizeof(char));
     return node.id;
 }
 
-// // MULTI INSERT 追加したIDの取得部分を実装していない
-// void bulkinsert(Node *node, int count)
-// {
-//     char* values;
-//     for (int i = 0; i < count; i++)
-//     {
-//         char* value;
-//         sprintf(value, "(%d, %d, %d, %d, %d, %d, %d, %d, %d, %d)", \
-//             node[i].parentID, node[i].turnNumber, node[i].move.address.row, node[i].move.address.column, node[i].move.piece.piece.name, node[i].move.piece.index, \
-//             node[i].throughCount, node[i].drawCount, node[i].fiWinCount, node[i].seWinCount);
-//         if (i > 0)strcat(values, ",");
-//         strcat(values, value);
-//     }
-//     char* query;
-//     sprintf(query, "insert into jdbctestdb.Node(parentID, turnNumber, `row`, `column`, pieceName, pieceID, throughCount, drawCount, firstWinCount, secondWinCount)values %s;", values);
-//     Node **n;
-//     base(n, query, INSERT);
-// }
+// MULTI INSERT 追加したIDの取得部分を実装していない
+void bulkinsert(Node *node, int count)
+{
+    char* values = (char*)calloc(256 * count, sizeof(char));
+    for (int i = 0; i < count; i++)
+    {
+        char* value = (char*)calloc(256, sizeof(char));
+        sprintf(value, "('%s', '%s', %d, %d, %d, %d, %d, %d, %d, %d, %d)", \
+            node[i].id, node[i].parentId, node[i].turnNumber, node[i].move.address.row, node[i].move.address.column, node[i].move.piece.piece.name, node[i].move.piece.index, \
+            node[i].throughCount, node[i].drawCount, node[i].fiWinCount, node[i].seWinCount);
+        if (i > 0)strcat(values, ",");
+        strcat(values, value);
+        memset(value, 0, 256 * sizeof(char));
+        free(value);
+    }
+    char* query = (char*)calloc(256 * (count + 1), sizeof(char));
+    sprintf(query, "insert into %s.Node(ID, parentID, turnNumber, `row`, `column`, pieceName, pieceID, throughCount, drawCount, firstWinCount, secondWinCount)values %s;", DBNAME, values);
+    // printf("%s\n", query);
+    Node **n;
+    base(n, query, 256 * (count + 1), INSERT);
+    memset(query, 0, 256 * (count + 1) * sizeof(char));
+    memset(values, 0, 256 * count * sizeof(char));
+    free(values);
+    free(query);
+}
 
 // UPDATE from Node
 void updateFromNode(Node node)
 {
     char query[256];
-    sprintf(query, "update jdbctestdb.Node set \
+    sprintf(query, "update %s.Node set \
         turnNumber = %d, `row` = %d, `column` = %d, pieceName = %d, pieceID = %d, \
-        throughCount = %d, drawCount = %d, firstWinCount = %d, secondWinCount = %d where ID = '%s';",\
+        throughCount = %d, drawCount = %d, firstWinCount = %d, secondWinCount = %d where ID = '%s';", DBNAME, \
         node.turnNumber, node.move.address.row, node.move.address.column, node.move.piece.piece.name, node.move.piece.index, \
         node.throughCount, node.drawCount, node.fiWinCount, node.seWinCount, node.id);
+    // printf("%s\n", query);
     Node **n;
-    base(n, query, UPDATE);
+    base(n, query, 256, UPDATE);
+    memset(query, 0, 256 * sizeof(char));
 }
 
 // SELECT where ID
-void selectWhereID(Node **node, char* ID)
+int selectWhereID(Node **node, char ID[43])
 {
+    printf("select where id: %s\n", ID);
     char query[256];
-    sprintf(query, "select * from jdbctestdb.Node where ID = '%s';", ID);
-    selectq(node, query);
+    sprintf(query, "select * from %s.Node where ID = '%s';", DBNAME, ID);
+    int result = selectq(node, query);
+    memset(query, 0, 256 * sizeof(char));
+    return result;
 }
 
 // SELECT where parentID
-void selectWhereParentID(Node **node, char* parentID)
+int selectWhereParentID(Node **node, char* parentID)
 {
     char query[256];
-    sprintf(query, "select * from jdbctestdb.Node where parentID = '%s';", parentID);
-    printf("%s\n", query);
-    selectq(node, query);
+    sprintf(query, "select * from %s.Node where parentID = '%s';", DBNAME, parentID);
+    // printf("%s\n", query);
+    int result = selectq(node, query);
+    memset(query, 0, 256 * sizeof(char));
+    return result;
 }

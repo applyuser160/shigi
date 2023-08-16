@@ -396,8 +396,10 @@ void serchAndAddMoves(Move **pointableHands, int *count, Square fromSquare, Squa
             addMoves(pointableHands, count, targetSquare.address, promotedPiece);
         }
     }
-    addMoves(pointableHands, count, targetSquare.address, fromSquare.piece);
-    return;
+    else
+    {
+        addMoves(pointableHands, count, targetSquare.address, fromSquare.piece);
+    }
 }
 
 // 特定のアドレスから任意の場所に移動し、指すことが出来る手を追加する

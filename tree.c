@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,7 +10,7 @@
 #include "mysql.c"
 #include "parson.c"
 
-#define NUMBER_OF_SEARCH 10
+#define NUMBER_OF_SEARCH 100
 #define NUMBER_OF_CHARACTERS_FOR_A_NODE 235
 
 #define JSON2STRUCT_STR(_json, _struct, _key, _size)                           \
@@ -32,6 +33,7 @@
 
 char randChar()
 {
+    randBetween(61, 0);
     char c = (char)randBetween(61, 0);
     if (c > 35)
     {
@@ -48,26 +50,32 @@ char randChar()
     return c;
 }
 
-char* generateUUID()
+void generateUUID(char **uuid)
 {
-    char uuid[36];
-    for (int i = 0; i < 36; i++)
+    *uuid = (char*)calloc(43, sizeof(char));
+    for (int i = 0; i < 37; i++)
     {
-        if (i == 12 || i == 16 || i == 20 || i == 24)
+        if (i == 8 || i == 13 || i == 18 || i == 23 || i == 36)
         {
-            uuid[i] = 45;
+            (*uuid)[i] = 45;
         }
         else
         {
-            uuid[i] = randChar();
+            (*uuid)[i] = randChar();
         }
     }
+    struct timeval t1;
+    mingw_gettimeofday(&t1, NULL);
+    char* timestr = (char*)calloc(6, sizeof(char));
+    sprintf(timestr, "%ld", t1.tv_usec);
+    strcat(*uuid, timestr);
 }
 
 void initNode(Node **node)
 {
-    struct Node *one = (struct Node *)calloc(1, sizeof(Node));
-    (*one).id = generateUUID();
+    Node *one = (struct Node *)calloc(1, sizeof(Node));
+    generateUUID(&((*one).id));
+    (*one).parentId = "";
     (*one).parent = NULL;
     (*one).childCount = 0;
     (*one).child = NULL;
@@ -106,9 +114,9 @@ bool equalAPiece(APiece left, APiece right)
 
 bool equalMove(Move left, Move right)
 {
-    printf("eq\n");
-    printf("rightad:%d,%d\n", right.address.row, right.address.column);
-    printf("leftad:%d,%d\n", left.address.row, left.address.column);
+    // printf("eq\n");
+    // printf("rightad:%d,%d\n", right.address.row, right.address.column);
+    // printf("leftad:%d,%d\n", left.address.row, left.address.column);
     
     return equalAddress(left.address, right.address) && equalAPiece(left.piece, right.piece);
 }
@@ -289,40 +297,59 @@ int ucb(struct Node node, int t, Turn turn)
 // 現在指すことができる手のノードを作成する
 void createNodeFromPossiblePlace(struct Node *node, Condition condition)
 {
+    // printf("node.id:%s\n", (*node).id);
+
     Move *pointableHands;
     int pointableHandsCount = serchPointableHands(condition, &pointableHands);
 
     // データベースより子ノードの取得
     Node* child;
-    selectWhereParentID(&child, (*node).id);
+    int count = selectWhereParentID(&child, (*node).id);
+    // printf("count:%d\n", pointableHandsCount);
+
+    // データベースに追加するノードリスト
+    Node* insertNodes;
+    int insertCount = 0;
 
     for (int i = 0; i < pointableHandsCount; i++)
     {
         char* id;
         bool hasCreated = false;
-        for (int j = 0; j < (*node).childCount; j++)
+        for (int j = 0; j < count; j++)
         {
-            if (equalMove((child[i]).move, pointableHands[i]))
+            if (equalMove((child[j]).move, pointableHands[i]))
             {
+                // printf("hasCreated\n");
                 hasCreated = true;
-                id = (child[i]).id;
+                deployNode(&child[j], node);
             }
         }
 
-        Node *newNode;
-        initNode(&newNode);
-        (*newNode).turnNumber = (*node).turnNumber + 1;
-        (*newNode).move.address.row = pointableHands[i].address.row;
-        (*newNode).move.address.column = pointableHands[i].address.column;
-        (*newNode).move.piece = pointableHands[i].piece;
-
-        deployNode(newNode, node);
-
         if (!hasCreated)
         {
-            id = insertFromNode(*newNode);
+            Node *newNode;
+            initNode(&newNode);
+            (*newNode).turnNumber = (*node).turnNumber + 1;
+            (*newNode).move.address.row = pointableHands[i].address.row;
+            (*newNode).move.address.column = pointableHands[i].address.column;
+            (*newNode).move.piece = pointableHands[i].piece;
+            deployNode(newNode, node);
+            Node *old = insertNodes;
+            insertNodes = (Node*)calloc(insertCount + 1, sizeof(Node));
+            for (int o = 0; o < insertCount; o++)
+            {
+                insertNodes[o] = old[o];
+            }
+            insertNodes[insertCount] = *newNode;
+            insertCount++;
         }
-        (*newNode).id = id;
+        // printf("i:%d\n", i);
+    }
+    // printf("bulk:%d\n", insertCount);
+
+    if (insertCount > 0)
+    {
+        bulkinsert(insertNodes, insertCount);
     }
 }
 
@@ -333,7 +360,9 @@ void freeChildNode(Node *node, int index)
     {
         if (i != index)
         {
+            printf("d1\n");
             free((*node).child[i]);
+            printf("d2\n");
         }
     }
 }

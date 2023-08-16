@@ -14,3 +14,4 @@ create table shogi.Node (
 ) comment 'Node' ;
 
 ALTER TABLE shogi.Node MODIFY COLUMN ID VARCHAR(100);
+ALTER TABLE shogi.Node MODIFY COLUMN parentID VARCHAR(100) NULL;
