@@ -9,14 +9,8 @@ typedef struct Node
     // parentID
     char *parentId;
 
-    // 前のノード
-    struct Node *parent;
-
     // 次のノード数
     int childCount;
-
-    // 次のノード
-    struct Node **child;
 
     // ターン数
     int turnNumber;

@@ -9,10 +9,17 @@
 int randBetween(int max, int min)
 {
     struct timeval t1;
-    usleep(1);
     mingw_gettimeofday(&t1, NULL);
     srand(t1.tv_usec * t1.tv_sec);
     return (rand()%(max - min + 1)) + min;
+}
+
+unsigned long long randULL(unsigned long long max, unsigned long long min)
+{
+    struct timeval t1;
+    mingw_gettimeofday(&t1, NULL);
+    srand(t1.tv_usec * t1.tv_sec);
+    return (((unsigned long long)rand() * (unsigned long long)rand()) % (max - min + 1)) + (unsigned long long)min;
 }
 
 void game()

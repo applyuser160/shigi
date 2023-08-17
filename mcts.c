@@ -6,81 +6,81 @@
 #include <unistd.h>
 #include "tree.c"
 
+// 手法
+// 指した手のみを保持するノードの配列を用いる
+// 次にさせる手は、計算し、構造体リストに格納する　ターン終了時に開放
 void learn(void)
 {
-    printf("start\n");
+    unsigned long long num = randULL(ULLONG_MAX - 1, 0);
+    printf("num:%llu\n", num);
+    printf("num:%llx\n", num);
+    printf("num:%llo\n", num);
+    return;
+
+
     // モンテカルロ木
     Node *tree;
-    printf("start\n");
 
-    // 既にトップノードが作成済みの場合
+    // topnode sql:insert into [dbname].[tablename] values('sZG6neL2-sZQ7-oeLC-tjQ7-yfVZG7xeVL2t-524566', null, 0, 0, 0, -1, 0, 0, 0, 0, 0);
     char* topNodeId = "sZG6neL2-sZQ7-oeLC-tjQ7-yfVZG7xeVL2t-524566";
-    printf("%s\n", topNodeId);
     selectWhereID(&tree, topNodeId);
-
-    // // まだトップノードが作成されていない場合
-    // initNode(&tree);
-    // insertFromNode(*tree);
-    // char* topNodeId = (*tree).id;
-    printf("idp:%p\n", tree);
-    // printf("id:%s\n", (*tree).id);
-
-    
+    printf("start\n");
 
     for (int i = 0; i < NUMBER_OF_SEARCH; i++)
     {
         // 盤面
         Condition condition = initCondition();
 
-        // displayCondition(condition);
-
-        Node *currentNode;
+        Node *currentNode = (Node*)calloc(condition.turnNumber, sizeof(Node));
         selectWhereID(&currentNode, topNodeId);
-
-        // ターンナンバー
-        int turnNumber = 0;
-
-        // 手番
-        Turn turn = FIRST;
+        printf("cu[0]:%s\n", currentNode[0].id);
 
         // 勝った方
         Turn winner;
 
         while (1)
         {
+            if (i == 1 && condition.turnNumber > 3)return;
+            Node *nextNodelist;
+            int nextNodeCount;
 
             // UCBにより、手を評価し、選択する
-            createNodeFromPossiblePlace(currentNode, condition);
-            // int selected = ucb(*currentNode, i, condition.turn);
-            int selected = randBetween((*currentNode).childCount - 1,0);
-            Move nextMove = (*(*currentNode).child[selected]).move;
+            // printf("a%d\n", condition.turnNumber);
+            printf("currentNode[%d].id:%s\n", condition.turnNumber - 1, currentNode[condition.turnNumber - 1].id);
+            printf("currentNode[%d].parentId:%s\n", condition.turnNumber - 1, currentNode[condition.turnNumber - 1].parentId);
+            createNodeFromPossiblePlace(&nextNodelist, &nextNodeCount, currentNode[condition.turnNumber - 1], condition);
+            // printf("b\n");
+            // int selected = ucb(nextNodelist, nextNodeCount, i, condition.turn);
+            int selected = randBetween(nextNodeCount - 1,0);
+            // printf("nextNodelist[%d].parentid:%s\n", selected, nextNodelist[selected].parentId);
 
-            // 選択されたノードを除いてメモリ開放
-            // freeChildNode(currentNode, selected);
-            // free((*currentNode).child);
+            Node *oldNode = currentNode;
+            currentNode = (Node*)calloc(condition.turnNumber + 1, sizeof(Node));
+            for (int i = 0; i < condition.turnNumber; i++)
+            {
+                currentNode[i] = oldNode[i];
+            }
+            free(oldNode);
+            currentNode[condition.turnNumber] = nextNodelist[selected];
+            // printf("currentNode[%d].id:%s\n", condition.turnNumber, currentNode[condition.turnNumber].id);
+            // printf("currentNode[%d].parentId:%s\n", condition.turnNumber, currentNode[condition.turnNumber].parentId);
+            // printf("c\n");
+
+            // nextNodelist開放
+            // printf("%p\n", nextNodelist);
+            // free(nextNodelist);
+            // printf("d\n");
 
             // 手を指す
-            executeMove(&condition, nextMove);
+            executeMove(&condition, currentNode[condition.turnNumber].move);
 
             // displayCondition(condition);
 
-            // ターン数の加算
-            condition.turnNumber++;
-
-            // 新たなノードを作成
-            Node *node = (*currentNode).child[selected];
-            (*node).turnNumber = condition.turnNumber;
-            (*node).move = nextMove;
-            
-            // データベースに反映
-            updateFromNode(*node);
-
-            // 現在のノードを移動
-            currentNode = (*currentNode).child[selected];
-
             // 終了判定
-            if (!isEnd(condition, &winner) || condition.turnNumber > 500)
+            if (!isEnd(condition, &winner) && condition.turnNumber < 500)
             {
+                // ターン数の加算
+                condition.turnNumber++;
                 // 次のターンへ
                 condition.turn = !condition.turn;
             }
@@ -94,41 +94,45 @@ void learn(void)
         for (int j = condition.turnNumber; j > -1; j--)
         {
             // 通過数と結果を加算
-            (*currentNode).throughCount++;
+            currentNode[j].throughCount++;
             if (condition.turnNumber > 500)
             {
-                (*currentNode).drawCount++;
+                currentNode[j].drawCount++;
             }
             else
             {
                 switch (winner)
                 {
                 case FIRST:
-                    (*currentNode).fiWinCount++;
+                    currentNode[j].fiWinCount++;
                     break;
                 case SECOND:
-                    (*currentNode).seWinCount++;
+                    currentNode[j].seWinCount++;
                     break;
                 }
             }
-
-            // データベースに反映
-            updateFromNode(*currentNode);
-
-            if ((*currentNode).turnNumber > 0)
+        }
+        // データベースに反映
+        Node *nodeForInsert = (Node *)calloc(condition.turnNumber, sizeof(Node));
+        int nodeForInsertCount = 0;
+        for (int i = 0; i < condition.turnNumber; i++)
+        {
+            if (currentNode[i].throughCount > 1 || currentNode[i].turnNumber == 0)
             {
-                printf("currentnodep:%s\n", (*currentNode).parentId);
-                selectWhereID(&currentNode, (*currentNode).parentId);
+                updateFromNode(currentNode[i + 1]);
+            }
+            else
+            {
+                nodeForInsert[nodeForInsertCount] = currentNode[i];
+                nodeForInsertCount++;
             }
         }
         free(currentNode);
+        bulkinsert(nodeForInsert, nodeForInsertCount);
+        free(nodeForInsert);
+
         printf("serch turn:%d\n", i);
     }
 
-    printf("tree created\n");
-
-    free(tree);
-
     printf("end\n");
-
 }

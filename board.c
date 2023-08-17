@@ -168,8 +168,9 @@ void initNotOnBoard(APiece notOnBoard[NUMBER_OF_PIECES])
 Condition initCondition()
 {
     Board board = initBoard();
-    int turnNumber = 1;
-    Condition condition = {board, 0, 0, turnNumber};
+    Condition condition;
+    condition.board = board;
+    condition.turnNumber = 1;
     condition.turn = FIRST;
     initNotOnBoard(condition.notOnBoard);
     return condition;
