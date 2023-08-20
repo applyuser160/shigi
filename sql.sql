@@ -1,6 +1,6 @@
 create table shogi.Node (
   ID varchar(100) not null
-  , parentID int(10) not null 
+  , parentID varchar(100) null
   , turnNumber int(10) not null 
   , `row` int(10) not null 
   , `column` int(10) not null 

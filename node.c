@@ -30,3 +30,19 @@ typedef struct Node
     // 勝利数 SECOND
     int seWinCount;
 } Node;
+
+void initNode(Node *node)
+{
+    (*node).id = (char*)calloc(43, sizeof(char));
+    generateUUID2((*node).id);
+    (*node).parentId = (char*)calloc(43, sizeof(char));
+    (*node).childCount = 0;
+    (*node).turnNumber = 0;
+    (*node).move.address.row = 0;
+    (*node).move.address.column = 0;
+    (*node).move.piece = generateAPiece(NON, 0, FIRST);
+    (*node).throughCount = 0;
+    (*node).drawCount = 0;
+    (*node).fiWinCount = 0;
+    (*node).seWinCount = 0;
+}

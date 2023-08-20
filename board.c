@@ -371,6 +371,7 @@ void addMoves(Move **moves, int *count, Address address, APiece piece)
     Move move = {address, piece};
     (*moves)[*count] = move;
     (*count)++;
+    if(*count > 1)free(old);
 }
 
 // その場所に指すことができる手を追加する

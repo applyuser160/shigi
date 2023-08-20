@@ -30,15 +30,26 @@ typedef enum COLUMN_NO
 
 void setNode(Node *node, MYSQL_ROW mysql_row, unsigned int fields)
 {
+    initNode(node);
     for (unsigned int col = 0; col < fields; col++)
     {
         switch (col)
         {
         case ID:
-            (*node).id = mysql_row[col];
+            // ポインタを渡すやり方だと、狂うので、値渡しにする　parentIdも同じ
+            for (int i = 0; i < 43; i++)
+            {
+                (*node).id[i] = mysql_row[col][i];
+            }
             break;
         case PARENTID:
-            (*node).parentId = mysql_row[col];
+            if (mysql_row[col] != 0)
+            {
+                for (int i = 0; i < 43; i++)
+                {
+                    (*node).parentId[i] = mysql_row[col][i];
+                }
+            }
             break;
         case TURNNUMBER:
             (*node).turnNumber = atoi(mysql_row[col]);
@@ -68,71 +79,55 @@ void setNode(Node *node, MYSQL_ROW mysql_row, unsigned int fields)
             (*node).seWinCount = atoi(mysql_row[col]);
             break;
         }
-        // printf("%s ", mysql_row[col]);
     }
     (*node).move.piece = generateAPiece((*node).move.piece.piece.name, (*node).move.piece.index, (*node).turnNumber % 2 == 1);
-    // printf("\r\n");
 }
 
-int base(Node **node, char* query, int queryLength, SQL_TYPE type)
+int base(Node *node, char* query, int queryLength, SQL_TYPE type)
 {
-    MYSQL *conn; /* MySQLとの接続を表す構造体 */
-    MYSQL_RES *res; /* SELECT文（など）の結果を表す構造体 */
-    MYSQL_ROW row; /* MYSQL_RESの中の1レコードを示す構造体 */
+    MYSQL *conn;
+    MYSQL_RES *res;
+    MYSQL_ROW row;
 
-    const char *SERV = "192.168.0.220"; /* MySQLが設置してあるサーバのIPアドレスorホスト名 */
-    const char *USER = "root"; /* MySQLにアクセスする際のユーザ名 */
-    const char *PASSWORD = "root"; /* MySQLにアクセスする際にパスワード */
-    const char *DB_NAME = DBNAME; /* 接続先のMySQLで使用するデータベース名 */
-    const unsigned int PORT = 3306; /* 接続先のサーバでMySQLが稼働しているポート番号 */
+    const char *SERV = "192.168.0.220";
+    const char *USER = "root";
+    const char *PASSWORD = "root";
+    const char *DB_NAME = DBNAME;
+    const unsigned int PORT = 3306;
 
-    conn = mysql_init(NULL); /* 接続の初期化 */
-    mysql_options(conn, MYSQL_SET_CHARSET_NAME, "cp932"); /* オプション設定。今回は文字コードの設定をcp932に設定している。 */
+    conn = mysql_init(NULL); 
+    mysql_options(conn, MYSQL_SET_CHARSET_NAME, "cp932"); 
     int ssl_mode = SSL_MODE_DISABLED;
     mysql_options(conn, MYSQL_OPT_SSL_MODE, &ssl_mode); //ssl-mode=DISABLED
  
-    /* 接続 */
-    /* mysql_real_connect()関数：MySQLと接続を開始 */
-    if( !mysql_real_connect(conn,SERV,USER,PASSWORD,DB_NAME,PORT,NULL,0) ){
-        fprintf(stderr, "c%s\r\n", mysql_error(conn)); /* エラーが発生した場合、標準エラー出力に内容を表示 */
+    if( !mysql_real_connect(conn,SERV,USER,PASSWORD,DB_NAME,PORT,NULL,0)){
+        fprintf(stderr, "c%s\r\n", mysql_error(conn)); 
         exit(-1);
     }
  
-    /* query実行 */
-    /* mysql_query()関数：queryを実行 */
     if( mysql_query( conn, query) ){
         fprintf(stderr, "e%s\nsql:%s\r\n", mysql_error(conn), query);
         exit(-1);
     }
-    /* 結果を取得 */
-    /* mysql_use_result()関数：queryの実行結果全体を取得 */
     res = mysql_store_result(conn);
  
-    /* 結果の処理 */
     int resultCount;
     if (type == SELECT)
     {
         unsigned long long rows = mysql_num_rows(res);
-        Node *result = (Node *)calloc(rows, sizeof(Node));
         for (int i = 0; i < rows; i++)
         {
             row = mysql_fetch_row(res);
             unsigned int fields = mysql_num_fields(res);
-            printf("setnode:%p\n", result[i]);
-            setNode(&(result[i]), row, fields);
+            setNode(&(node[i]), row, fields);
         }
-        *node = result;
         resultCount = rows;
     }
 
-    /* 構造体の解放処理 */
-    /* mysql_free_result()関数：検索結果を保持している構造体のメモリを解放 */
     if(NULL != res){
         mysql_free_result(res);
     }
  
-    /* 接続の解放処理 */
-    /* mysql_close()関数：mysqlとの接続を切断 */
     if(NULL != conn){
         mysql_close(conn);
     }
@@ -143,7 +138,7 @@ int base(Node **node, char* query, int queryLength, SQL_TYPE type)
 }
 
 // SELECT
-int selectq(Node **node, char query[256])
+int selectq(Node *node, char query[256])
 {
     return base(node, query, 256, SELECT);
 }
@@ -151,14 +146,14 @@ int selectq(Node **node, char query[256])
 // INSERT
 void insert(char query[256])
 {
-    Node **node;
+    Node *node;
     base(node, query, 256, INSERT);
 }
 
 // UPDATE
 void update(char query[256])
 {
-    Node **node;
+    Node *node;
     base(node, query, 256, UPDATE);
 }
 
@@ -170,8 +165,8 @@ char* insertFromNode(Node node)
         node.id, node.parentId, node.turnNumber, node.move.address.row, node.move.address.column, node.move.piece.piece.name, node.move.piece.index, \
         node.throughCount, node.drawCount, node.fiWinCount, node.seWinCount);
     char query[256];
-    sprintf(query, "insert into %s.%s(ID, parentID, turnNumber, `row`, `column`, pieceName, pieceID, throughCount, drawCount, firstWinCount, secondWinCount)values %s;", DBNAME, TABLENAME, values);
-    // printf("%s\n", query);
+    sprintf(query, "insert into %s.%s(ID, parentID, turnNumber, `row`, `column`, pieceName, pieceID, throughCount, drawCount, firstWinCount, secondWinCount)values %s;\0",\
+        DBNAME, TABLENAME, values);
     insert(query);
     memset(query, 0, 256 * sizeof(char));
     memset(values, 0, 256 * sizeof(char));
@@ -194,9 +189,9 @@ void bulkinsert(Node *node, int count)
         free(value);
     }
     char* query = (char*)calloc(256 * (count + 1), sizeof(char));
-    sprintf(query, "insert into %s.%s(ID, parentID, turnNumber, `row`, `column`, pieceName, pieceID, throughCount, drawCount, firstWinCount, secondWinCount)values %s;", DBNAME, TABLENAME, values);
-    // printf("%s\n", query);
-    Node **n;
+    sprintf(query, "insert into %s.%s(ID, parentID, turnNumber, `row`, `column`, pieceName, pieceID, throughCount, drawCount, firstWinCount, secondWinCount)values %s;\0", \
+        DBNAME, TABLENAME, values);
+    Node *n;
     base(n, query, 256 * (count + 1), INSERT);
     memset(query, 0, 256 * (count + 1) * sizeof(char));
     memset(values, 0, 256 * count * sizeof(char));
@@ -211,36 +206,32 @@ void updateFromNode(Node node)
     memset(query, 0, 256 * sizeof(char));
     sprintf(query, "update %s.%s set \
         turnNumber = %d, `row` = %d, `column` = %d, pieceName = %d, pieceID = %d, \
-        throughCount = %d, drawCount = %d, firstWinCount = %d, secondWinCount = %d where ID = '%s';", DBNAME, TABLENAME,\
-        node.turnNumber, node.move.address.row, node.move.address.column, node.move.piece.piece.name, node.move.piece.index, \
+        throughCount = %d, drawCount = %d, firstWinCount = %d, secondWinCount = %d where ID = '%s';\0",\
+        DBNAME, TABLENAME, node.turnNumber, node.move.address.row, node.move.address.column, node.move.piece.piece.name, node.move.piece.index, \
         node.throughCount, node.drawCount, node.fiWinCount, node.seWinCount, node.id);
-    // printf("%s\n", query);
-    Node **n;
+    Node *n;
     base(n, query, 256, UPDATE);
     memset(query, 0, 256 * sizeof(char));
 }
 
 // SELECT where ID
-int selectWhereID(Node **node, char ID[43])
+int selectWhereID(Node *node, char ID[43])
 {
     char query[256];
     memset(query, 0, 256 * sizeof(char));
-    sprintf(query, "select * from %s.%s where ID = '%s';", DBNAME, TABLENAME, ID);
+    sprintf(query, "select * from %s.%s where ID = '%s';\0", DBNAME, TABLENAME, ID);
     int result = selectq(node, query);
     memset(query, 0, 256 * sizeof(char));
     return result;
 }
 
 // SELECT where parentID
-int selectWhereParentID(Node **node, char parentID[43])
+int selectWhereParentID(char parentID[43], Node *node)
 {
     char query[256];
     memset(query, 0, 256 * sizeof(char));
-    sprintf(query, "select * from %s.%s where parentID = '%s';", DBNAME, TABLENAME, parentID);
-    printf("Query: %s\n", query); // デバッグ出力
+    sprintf(query, "select * from %s.%s where parentID = '%s';\0", DBNAME, TABLENAME, parentID);
     int result = selectq(node, query);
-    printf("selectWhereParentID result: %d\n", result); // デバッグ出力
     memset(query, 0, 256 * sizeof(char));
     return result;
 }
-

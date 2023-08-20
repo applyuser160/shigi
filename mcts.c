@@ -11,20 +11,12 @@
 // 次にさせる手は、計算し、構造体リストに格納する　ターン終了時に開放
 void learn(void)
 {
-    unsigned long long num = randULL(ULLONG_MAX - 1, 0);
-    printf("num:%llu\n", num);
-    printf("num:%llx\n", num);
-    printf("num:%llo\n", num);
-    return;
-
-
     // モンテカルロ木
-    Node *tree;
+    Node *tree = (Node*)calloc(1, sizeof(Node));
 
     // topnode sql:insert into [dbname].[tablename] values('sZG6neL2-sZQ7-oeLC-tjQ7-yfVZG7xeVL2t-524566', null, 0, 0, 0, -1, 0, 0, 0, 0, 0);
     char* topNodeId = "sZG6neL2-sZQ7-oeLC-tjQ7-yfVZG7xeVL2t-524566";
-    selectWhereID(&tree, topNodeId);
-    printf("start\n");
+    selectWhereID(tree, topNodeId);
 
     for (int i = 0; i < NUMBER_OF_SEARCH; i++)
     {
@@ -32,49 +24,40 @@ void learn(void)
         Condition condition = initCondition();
 
         Node *currentNode = (Node*)calloc(condition.turnNumber, sizeof(Node));
-        selectWhereID(&currentNode, topNodeId);
-        printf("cu[0]:%s\n", currentNode[0].id);
+        selectWhereID(currentNode, topNodeId);
 
         // 勝った方
         Turn winner;
 
         while (1)
         {
-            if (i == 1 && condition.turnNumber > 3)return;
             Node *nextNodelist;
             int nextNodeCount;
 
             // UCBにより、手を評価し、選択する
-            // printf("a%d\n", condition.turnNumber);
-            printf("currentNode[%d].id:%s\n", condition.turnNumber - 1, currentNode[condition.turnNumber - 1].id);
-            printf("currentNode[%d].parentId:%s\n", condition.turnNumber - 1, currentNode[condition.turnNumber - 1].parentId);
             createNodeFromPossiblePlace(&nextNodelist, &nextNodeCount, currentNode[condition.turnNumber - 1], condition);
-            // printf("b\n");
-            // int selected = ucb(nextNodelist, nextNodeCount, i, condition.turn);
-            int selected = randBetween(nextNodeCount - 1,0);
-            // printf("nextNodelist[%d].parentid:%s\n", selected, nextNodelist[selected].parentId);
+            int selected = ucb(nextNodelist, nextNodeCount, condition.turnNumber, condition.turn);
+            // int selected = randBetween(nextNodeCount - 1,0);
 
             Node *oldNode = currentNode;
             currentNode = (Node*)calloc(condition.turnNumber + 1, sizeof(Node));
-            for (int i = 0; i < condition.turnNumber; i++)
+            for (int j = 0; j < condition.turnNumber; j++)
             {
-                currentNode[i] = oldNode[i];
+                currentNode[j] = oldNode[j];
             }
             free(oldNode);
             currentNode[condition.turnNumber] = nextNodelist[selected];
-            // printf("currentNode[%d].id:%s\n", condition.turnNumber, currentNode[condition.turnNumber].id);
-            // printf("currentNode[%d].parentId:%s\n", condition.turnNumber, currentNode[condition.turnNumber].parentId);
-            // printf("c\n");
-
-            // nextNodelist開放
-            // printf("%p\n", nextNodelist);
-            // free(nextNodelist);
-            // printf("d\n");
+            for (int j = 0; j < nextNodeCount; j++)
+            {
+                if (j != selected)
+                {
+                    free(nextNodelist[j].id);
+                }
+            }
+            free(nextNodelist);
 
             // 手を指す
             executeMove(&condition, currentNode[condition.turnNumber].move);
-
-            // displayCondition(condition);
 
             // 終了判定
             if (!isEnd(condition, &winner) && condition.turnNumber < 500)
@@ -95,7 +78,7 @@ void learn(void)
         {
             // 通過数と結果を加算
             currentNode[j].throughCount++;
-            if (condition.turnNumber > 500)
+            if (condition.turnNumber == 500)
             {
                 currentNode[j].drawCount++;
             }
@@ -115,23 +98,29 @@ void learn(void)
         // データベースに反映
         Node *nodeForInsert = (Node *)calloc(condition.turnNumber, sizeof(Node));
         int nodeForInsertCount = 0;
-        for (int i = 0; i < condition.turnNumber; i++)
+        for (int j = 0; j <= condition.turnNumber; j++)
         {
-            if (currentNode[i].throughCount > 1 || currentNode[i].turnNumber == 0)
+            if (currentNode[j].throughCount > 1 || currentNode[j].turnNumber == 0)
             {
-                updateFromNode(currentNode[i + 1]);
+                updateFromNode(currentNode[j]);
             }
             else
             {
-                nodeForInsert[nodeForInsertCount] = currentNode[i];
+                nodeForInsert[nodeForInsertCount] = currentNode[j];
                 nodeForInsertCount++;
             }
         }
+        // for (int j = 1; j <= condition.turnNumber; i++)
+        // {
+        //     free(currentNode[j].id);
+        //     // if(currentNode[j].parentId == 0)free(currentNode[j].parentId);
+        // }
         free(currentNode);
         bulkinsert(nodeForInsert, nodeForInsertCount);
         free(nodeForInsert);
 
         printf("serch turn:%d\n", i);
+        usleep(10);
     }
 
     printf("end\n");
