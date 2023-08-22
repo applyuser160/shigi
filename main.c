@@ -1,10 +1,4 @@
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <unistd.h>
-#include "mcts.c"
+#include "mcts.h"
 
 int main(void)
 {

@@ -1,15 +1,6 @@
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <unistd.h>
-#include "tree.c"
+#include "mcts.h"
 
-// 手法
-// 指した手のみを保持するノードの配列を用いる
-// 次にさせる手は、計算し、構造体リストに格納する　ターン終了時に開放
-void learn(void)
+void learn()
 {
     // モンテカルロ木
     Node *tree = (Node*)calloc(1, sizeof(Node));
@@ -36,23 +27,23 @@ void learn(void)
 
             // UCBにより、手を評価し、選択する
             createNodeFromPossiblePlace(&nextNodelist, &nextNodeCount, currentNode[condition.turnNumber - 1], condition);
-            int selected = ucb(nextNodelist, nextNodeCount, condition.turnNumber, condition.turn);
-            // int selected = randBetween(nextNodeCount - 1,0);
+            // int selected = ucb(nextNodelist, nextNodeCount, condition.turnNumber, condition.turn);
+            int selected = randBetween(nextNodeCount - 1,0);
 
             Node *oldNode = currentNode;
             currentNode = (Node*)calloc(condition.turnNumber + 1, sizeof(Node));
             for (int j = 0; j < condition.turnNumber; j++)
             {
-                currentNode[j] = oldNode[j];
+                initNode(&(currentNode[j]));
+                copyNode(&(oldNode[j]), &(currentNode[j]));
+                freeNode(&oldNode[j]);
             }
             free(oldNode);
-            currentNode[condition.turnNumber] = nextNodelist[selected];
+            initNode(&(currentNode[condition.turnNumber]));
+            copyNode(&(nextNodelist[selected]), &(currentNode[condition.turnNumber]));
             for (int j = 0; j < nextNodeCount; j++)
             {
-                if (j != selected)
-                {
-                    free(nextNodelist[j].id);
-                }
+                freeNode(&nextNodelist[j]);
             }
             free(nextNodelist);
 
@@ -96,7 +87,7 @@ void learn(void)
             }
         }
         // データベースに反映
-        Node *nodeForInsert = (Node *)calloc(condition.turnNumber, sizeof(Node));
+        Node *nodeForInsert = (Node *)calloc(condition.turnNumber + 1, sizeof(Node));
         int nodeForInsertCount = 0;
         for (int j = 0; j <= condition.turnNumber; j++)
         {
@@ -106,21 +97,35 @@ void learn(void)
             }
             else
             {
-                nodeForInsert[nodeForInsertCount] = currentNode[j];
+                initNode(&(nodeForInsert[nodeForInsertCount]));
+                copyNode(&(currentNode[j]), &(nodeForInsert[nodeForInsertCount]));
                 nodeForInsertCount++;
             }
         }
-        // for (int j = 1; j <= condition.turnNumber; i++)
-        // {
-        //     free(currentNode[j].id);
-        //     // if(currentNode[j].parentId == 0)free(currentNode[j].parentId);
-        // }
+        for (int j = 0; j <= condition.turnNumber; j++)
+        {
+            freeNode(&currentNode[j]);
+        }
         free(currentNode);
         bulkinsert(nodeForInsert, nodeForInsertCount);
+        for (int j = 0; j < nodeForInsertCount - 1; j++)
+        {
+            freeNode(&nodeForInsert[j]);
+        }
         free(nodeForInsert);
 
-        printf("serch turn:%d\n", i);
-        usleep(10);
+        time_t now = time(NULL);
+        printf("serch turn:%d, %s", i, ctime(&now));
+        usleep(100);
+
+        if (i % LEARNS_CLEARN_TURN == LEARNS_CLEARN_TURN - 1)
+        {
+            now = time(NULL);
+            printf("merge node start %s", ctime(&now));
+            mergeNode();
+            printf("merge node finshed %s", ctime(&now));
+            // return;
+        }
     }
 
     printf("end\n");

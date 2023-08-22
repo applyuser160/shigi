@@ -1,48 +1,58 @@
-#include "game.c"
-
-// モンテカルロ木のノード
-typedef struct Node
-{
-    // ID
-    char *id;
-
-    // parentID
-    char *parentId;
-
-    // 次のノード数
-    int childCount;
-
-    // ターン数
-    int turnNumber;
-
-    // 指し手
-    Move move;
-
-    // 通過数
-    int throughCount;
-
-    // 引分数
-    int drawCount;
-
-    // 勝利数 FIRST
-    int fiWinCount;
-
-    // 勝利数 SECOND
-    int seWinCount;
-} Node;
+#include "node.h"
+#include "util.h"
 
 void initNode(Node *node)
 {
     (*node).id = (char*)calloc(43, sizeof(char));
-    generateUUID2((*node).id);
+    generateUUID((*node).id);
     (*node).parentId = (char*)calloc(43, sizeof(char));
     (*node).childCount = 0;
     (*node).turnNumber = 0;
     (*node).move.address.row = 0;
     (*node).move.address.column = 0;
-    (*node).move.piece = generateAPiece(NON, 0, FIRST);
+    (*node).move.piece = generatePiece(NON, 0, FIRST);
     (*node).throughCount = 0;
     (*node).drawCount = 0;
     (*node).fiWinCount = 0;
     (*node).seWinCount = 0;
+}
+
+void copyNode(Node *copy, Node *copied)
+{
+    for (int i = 0; i < 43; i++)
+    {
+        (*copied).id[i] = (*copy).id[i];
+        (*copied).parentId[i] = (*copy).parentId[i];
+    }
+    (*copied).childCount = (*copy).childCount;
+    (*copied).turnNumber = (*copy).turnNumber;
+    (*copied).move.address.row = (*copy).move.address.row;
+    (*copied).move.address.column = (*copy).move.address.column;
+    (*copied).move.piece = (*copy).move.piece;
+    (*copied).throughCount = (*copy).throughCount;
+    (*copied).drawCount = (*copy).drawCount;
+    (*copied).fiWinCount = (*copy).fiWinCount;
+    (*copied).seWinCount = (*copy).seWinCount;
+}
+
+void copyGroupedNode(GroupedNode *copy, Node *copied)
+{
+    for (int i = 0; i < 43; i++)
+    {
+        (*copied).parentId[i] = (*copy).parentId[i];
+    }
+    (*copied).turnNumber = (*copy).turnNumber;
+    (*copied).move.address.row = (*copy).move.address.row;
+    (*copied).move.address.column = (*copy).move.address.column;
+    (*copied).move.piece = (*copy).move.piece;
+    (*copied).throughCount = (*copy).throughCount;
+    (*copied).drawCount = (*copy).drawCount;
+    (*copied).fiWinCount = (*copy).fiWinCount;
+    (*copied).seWinCount = (*copy).seWinCount;
+}
+
+void freeNode(Node *node)
+{
+    free((*node).id);
+    free((*node).parentId);
 }

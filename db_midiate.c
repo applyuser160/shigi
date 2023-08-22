@@ -1,32 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include "node.c"
-#include "mysql-8.1.0-winx64/include/mysql.h" /* MySQLを利用するための構造体の定義などが書かれたヘッダファイル */
-
-#define DBNAME "shogi"
-#define TABLENAME "node"
-
-typedef enum SQL_TYPE
-{
-    SELECT = 1,
-    INSERT = 2,
-    UPDATE = 3
-}SQL_TYPE;
-
-typedef enum COLUMN_NO
-{
-    ID = 0,
-    PARENTID = 1,
-    TURNNUMBER = 2,
-    ROW = 3,
-    COLUMN = 4,
-    PIECENAME = 5,
-    PIECEID = 6,
-    THROUGHCOUNT = 7,
-    DRAWCOUNT = 8,
-    FIRSTWINCOUNT = 9,
-    SECONDWINCOUNT = 10
-}COLUMN_NO;
+#include "db_midiate.h"
 
 void setNode(Node *node, MYSQL_ROW mysql_row, unsigned int fields)
 {
@@ -80,10 +52,60 @@ void setNode(Node *node, MYSQL_ROW mysql_row, unsigned int fields)
             break;
         }
     }
-    (*node).move.piece = generateAPiece((*node).move.piece.piece.name, (*node).move.piece.index, (*node).turnNumber % 2 == 1);
+    (*node).move.piece = generatePiece((*node).move.piece.piece.name, (*node).move.piece.index, (*node).turnNumber % 2 == 1);
 }
 
-int base(Node *node, char* query, int queryLength, SQL_TYPE type)
+void setGroupedNode(GroupedNode *gnode, MYSQL_ROW mysql_row, unsigned int fields)
+{
+    for (unsigned int col = 0; col < fields; col++)
+    {
+        switch (col)
+        {
+        case G_PARENTID:
+            if (mysql_row[col] != 0)
+            {
+                (*gnode).parentId = (char*)calloc(43, sizeof(char));
+                for (int i = 0; i < 43; i++)
+                {
+                    (*gnode).parentId[i] = mysql_row[col][i];
+                }
+            }
+            break;
+        case G_TURNNUMBER:
+            (*gnode).turnNumber = atoi(mysql_row[col]);
+            break;
+        case G_ROW:
+            (*gnode).move.address.row = atoi(mysql_row[col]);
+            break;
+        case G_COLUMN:
+            (*gnode).move.address.column = atoi(mysql_row[col]);
+            break;
+        case G_PIECENAME:
+            (*gnode).move.piece.piece.name = atoi(mysql_row[col]);
+            break;
+        case G_PIECEID:
+            (*gnode).move.piece.index = atoi(mysql_row[col]);
+            break;
+        case G_COUNT:
+            (*gnode).count = atoi(mysql_row[col]);
+            break;
+        case G_THROUGHCOUNT:
+            (*gnode).throughCount = atoi(mysql_row[col]);
+            break;
+        case G_DRAWCOUNT:
+            (*gnode).drawCount = atoi(mysql_row[col]);
+            break;
+        case G_FIRSTWINCOUNT:
+            (*gnode).fiWinCount = atoi(mysql_row[col]);
+            break;
+        case G_SECONDWINCOUNT:
+            (*gnode).seWinCount = atoi(mysql_row[col]);
+            break;
+        }
+    }
+}
+
+int base(Node *node, GroupedNode *gnode, char* query, int queryLength, SQL_TYPE type, NODE_TYPE nodeType)
 {
     MYSQL *conn;
     MYSQL_RES *res;
@@ -119,7 +141,15 @@ int base(Node *node, char* query, int queryLength, SQL_TYPE type)
         {
             row = mysql_fetch_row(res);
             unsigned int fields = mysql_num_fields(res);
-            setNode(&(node[i]), row, fields);
+            switch (nodeType)
+            {
+            case NODE:
+                setNode(&(node[i]), row, fields);
+                break;
+            case GROUPED_NODE:
+                setGroupedNode(&(gnode[i]), row, fields);
+                break;
+            }
         }
         resultCount = rows;
     }
@@ -140,21 +170,32 @@ int base(Node *node, char* query, int queryLength, SQL_TYPE type)
 // SELECT
 int selectq(Node *node, char query[256])
 {
-    return base(node, query, 256, SELECT);
+    GroupedNode *g;
+    return base(node, g, query, 256, SELECT, NODE);
 }
 
 // INSERT
 void insert(char query[256])
 {
     Node *node;
-    base(node, query, 256, INSERT);
+    GroupedNode *gnode;
+    base(node, gnode, query, 256, INSERT, NODE);
 }
 
 // UPDATE
 void update(char query[256])
 {
     Node *node;
-    base(node, query, 256, UPDATE);
+    GroupedNode *gnode;
+    base(node, gnode, query, 256, UPDATE, NODE);
+}
+
+// DELETE
+void delete(char query[1000])
+{
+    Node *node;
+    GroupedNode *gnode;
+    base(node, gnode, query, 1000, SQL_DELETE, NODE);
 }
 
 // INSERT from Node
@@ -173,7 +214,7 @@ char* insertFromNode(Node node)
     return node.id;
 }
 
-// MULTI INSERT 追加したIDの取得部分を実装していない
+// MULTI INSERT
 void bulkinsert(Node *node, int count)
 {
     char* values = (char*)calloc(256 * count, sizeof(char));
@@ -192,7 +233,8 @@ void bulkinsert(Node *node, int count)
     sprintf(query, "insert into %s.%s(ID, parentID, turnNumber, `row`, `column`, pieceName, pieceID, throughCount, drawCount, firstWinCount, secondWinCount)values %s;\0", \
         DBNAME, TABLENAME, values);
     Node *n;
-    base(n, query, 256 * (count + 1), INSERT);
+    GroupedNode *g;
+    base(n, g, query, 256 * (count + 1), INSERT, NODE);
     memset(query, 0, 256 * (count + 1) * sizeof(char));
     memset(values, 0, 256 * count * sizeof(char));
     free(values);
@@ -210,7 +252,8 @@ void updateFromNode(Node node)
         DBNAME, TABLENAME, node.turnNumber, node.move.address.row, node.move.address.column, node.move.piece.piece.name, node.move.piece.index, \
         node.throughCount, node.drawCount, node.fiWinCount, node.seWinCount, node.id);
     Node *n;
-    base(n, query, 256, UPDATE);
+    GroupedNode *g;
+    base(n, g, query, 256, UPDATE, NODE);
     memset(query, 0, 256 * sizeof(char));
 }
 
@@ -234,4 +277,88 @@ int selectWhereParentID(char parentID[43], Node *node)
     int result = selectq(node, query);
     memset(query, 0, 256 * sizeof(char));
     return result;
+}
+
+// SELECT duplicated
+int selectDuplicated(GroupedNode *gnode, Node *node, int *count)
+{
+    char query[800];
+    memset(query, 0, 800 * sizeof(char));
+    sprintf(query, "select a.* from (select parentID, turnNumber, `row`, \
+        `column`, pieceName, pieceID, count(*) as count, sum(throughCount) as sumThroughCount, \
+        sum(drawCount) as sumDdawCount, sum(firstWinCount) as sumFirstWinCount, \
+        sum(secondWinCount) as sumSecondWinCount from %s.%s group by parentID, \
+        turnNumber, `row`, `column`, pieceName, pieceID order by turnNumber asc) as a \
+        where a.count > 1 order by a.turnNumber limit 100;", DBNAME, TABLENAME);
+    // printf("query: %s\n", query);
+    Node *n;
+    int result = base(n, gnode, query, 800, SELECT, GROUPED_NODE);
+    memset(query, 0, 800 * sizeof(char));
+    sprintf(query, "select b.* from %s.%s as b join (\
+        select a.* from (select parentID, turnNumber, `row`, `column`, \
+        pieceName, pieceID, count(*) as count, sum(throughCount) as sumThroughCount, \
+        sum(drawCount) as sumDdawCount, sum(firstWinCount) as sumFirstWinCount, \
+        sum(secondWinCount) as sumSecondWinCount from %s.%s group by parentID, \
+        turnNumber, `row`, `column`, pieceName, pieceID order by turnNumber asc\
+        ) as a where a.count > 1 order by a.turnNumber limit 100) as a \
+        on a.parentID = b.parentID and a.turnNumber = b.turnNumber \
+        and a.`row` = b.`row` and a.`column` = b.`column` and a.pieceName = b.pieceName \
+        and a.pieceID = b.pieceID order by b.turnNumber;", DBNAME, TABLENAME, DBNAME, TABLENAME);
+    // printf("query: %s\n", query);
+    GroupedNode *g;
+    *count = base(node, g, query, 800, SELECT, NODE);
+    memset(query, 0, 800 * sizeof(char));
+    return result;
+}
+
+// DELETE duplicated
+void deleteDuplicated(Node *node, int count)
+{
+    char* values = (char*)calloc(256 * count, sizeof(char));
+    for (int i = 0; i < count; i++)
+    {
+        char* value = (char*)calloc(256, sizeof(char));
+        sprintf(value, "ID = '%s'", node[i].id);
+        if (i > 0)strcat(values, " or ");
+        strcat(values, value);
+        memset(value, 0, 256 * sizeof(char));
+        free(value);
+    }
+    char* query = (char*)calloc(256 * (count + 1), sizeof(char));
+    sprintf(query, "delete from %s.%s where %s;\0", \
+        DBNAME, TABLENAME, values);
+    Node *n;
+    GroupedNode *g;
+    // printf("delete duplicated: %s\n", query);
+    base(n, g, query, 256 * (count + 1), SQL_DELETE, NODE);
+    memset(query, 0, 256 * (count + 1) * sizeof(char));
+    memset(values, 0, 256 * count * sizeof(char));
+    free(values);
+    free(query);
+}
+
+// UPDATE parentId
+void updateParentId(Node set, Node *where, int count)
+{
+    char* values = (char*)calloc(256 * count, sizeof(char));
+    for (int i = 0; i < count; i++)
+    {
+        char* value = (char*)calloc(256, sizeof(char));
+        sprintf(value, "parentID = '%s'", where[i].id);
+        if (i > 0)strcat(values, " or ");
+        strcat(values, value);
+        memset(value, 0, 256 * sizeof(char));
+        free(value);
+    }
+    char* query = (char*)calloc(256 * (count + 1), sizeof(char));
+    sprintf(query, "update %s.%s set parentID = '%s' where %s;\0", \
+        DBNAME, TABLENAME, set.id, values);
+    Node *n;
+    GroupedNode *g;
+    // printf("update pid: %s\n", query);
+    base(n, g, query, 256 * (count + 1), UPDATE, NODE);
+    memset(query, 0, 256 * (count + 1) * sizeof(char));
+    memset(values, 0, 256 * count * sizeof(char));
+    free(values);
+    free(query);
 }

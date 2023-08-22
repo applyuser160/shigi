@@ -1,23 +1,11 @@
-#define _CRT_SECURE_NO_WARNINGS
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <unistd.h>
-#include <tchar.h>
-#include <math.h>
-#include "mysql.c"
-
-#define NUMBER_OF_SEARCH 1000
-#define NUMBER_OF_CHARACTERS_FOR_A_NODE 235
+#include "tree.h"
 
 bool equalAddress(Address left, Address right)
 {
     return left.row == right.row && left.column == right.column;
 }
 
-bool equalAPiece(APiece left, APiece right)
+bool equalAPiece(Piece left, Piece right)
 {
     return left.index == right.index && left.piece.name == right.piece.name;
 }
@@ -85,17 +73,16 @@ void createNodeFromPossiblePlace(Node **nextNodelist, int *nextNodeCount, Node n
 {
     Move *pointableHands;
     *nextNodeCount = serchPointableHands(condition, &pointableHands);
-    // printf("nextNodeCount:%d\n", *nextNodeCount);
 
     *nextNodelist = (Node*)calloc(*nextNodeCount, sizeof(Node));
 
     // データベースより子ノードの取得
     Node* child = (Node*)calloc(*nextNodeCount, sizeof(Node));
-    int count = selectWhereParentID(node.id, child);
+    int count = 0;
+    if (!LEARN) count = selectWhereParentID(node.id, child);
 
     for (int i = 0; i < *nextNodeCount; i++)
     {
-        char* id;
         bool hasCreated = false;
         for (int j = 0; j < count; j++)
         {
@@ -115,10 +102,83 @@ void createNodeFromPossiblePlace(Node **nextNodelist, int *nextNodeCount, Node n
             newNode.move.address.row = pointableHands[i].address.row;
             newNode.move.address.column = pointableHands[i].address.column;
             newNode.move.piece = pointableHands[i].piece;
-            newNode.parentId = node.id;
+            copyUuid(&node.id, &newNode.parentId);
             (*nextNodelist)[i] = newNode;
         }
     }
     free(child);
-    // free(pointableHands);
+    free(pointableHands);
+}
+
+
+void mergeNode()
+{
+    // 重複しているレコードの統合
+    GroupedNode *groupedNode = (GroupedNode*)calloc(LEARNS_CLEARN_LIMIT, sizeof(GroupedNode));
+    Node *node = (Node*)calloc(LEARNS_CLEARN_LIMIT * LEARNS_CLEARN_TURN, sizeof(Node));
+    int dupIdCount = 0;
+    int duplicatedCount = selectDuplicated(groupedNode, node, &dupIdCount);
+
+    Node *deleteNode = (Node*)calloc(LEARNS_CLEARN_TURN * 2 * duplicatedCount, sizeof(Node));
+    int deleteCount = 0;
+
+    Node *newNodes = (Node*)calloc(duplicatedCount, sizeof(Node));
+    for (int i = 0; i < duplicatedCount; i++)
+    {
+        int updateCount = 0;
+        Node *updateNode = (Node*)calloc(LEARNS_CLEARN_TURN * 2, sizeof(Node));
+
+        initNode(&newNodes[i]);
+        copyGroupedNode(&groupedNode[i], &newNodes[i]);
+
+        free(groupedNode[i].parentId);
+
+        for (int j = 0; j < dupIdCount; j++)
+        {
+            bool eqPid = strcmp(newNodes[i].parentId, node[j].parentId) == 0;
+            bool eqtnum = newNodes[i].turnNumber == node[j].turnNumber;
+            bool eqmove = equalMove(newNodes[i].move, node[j].move);
+            bool eqall = eqPid && eqtnum && eqmove;
+            if (eqall)
+            {
+                initNode(&updateNode[updateCount]);
+                copyNode(&node[j], &updateNode[updateCount]);
+                updateCount++;
+
+                initNode(&deleteNode[deleteCount]);
+                copyNode(&node[j], &deleteNode[deleteCount]);
+                deleteCount++;
+                if (updateCount == LEARNS_CLEARN_TURN * 2) break;
+            }
+        }
+        updateParentId(newNodes[i], updateNode, updateCount);
+
+        for (int j = 0; j < updateCount; j++)
+        {
+            freeNode(&updateNode[j]);
+        }
+        free(updateNode);
+    }
+    free(groupedNode);
+
+    deleteDuplicated(deleteNode, deleteCount);
+    bulkinsert(newNodes, duplicatedCount);
+
+    for (int i = 0; i < dupIdCount; i++)
+    {
+        freeNode(&node[i]);
+    }
+    free(node);
+
+    for (int i = 0; i < deleteCount; i++)
+    {
+        freeNode(&deleteNode[i]);
+    }
+    free(deleteNode);
+
+    for (int i = 0; i < duplicatedCount; i++)
+    {
+        freeNode(&newNodes[i]);
+    }
+    free(newNodes);
 }

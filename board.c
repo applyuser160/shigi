@@ -1,51 +1,8 @@
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <unistd.h>
-#include "piece.c"
-
-typedef enum SquareStatus
-{
-    NOT_USED = false,
-    USED = true,
-}SquareStatus;
-
-typedef struct Address
-{
-    int row;
-    int column;
-}Address;
-
-typedef struct Square
-{
-    Address address;
-    SquareStatus isUsed;
-    APiece piece;
-}Square;
-
-typedef struct Board
-{
-    Square squares[NUMBER_OF_SQUARES];
-}Board;
-
-typedef struct Condition
-{
-    Board board;
-    APiece notOnBoard[NUMBER_OF_PIECES];
-    Turn turn;
-    int turnNumber;
-}Condition;
-
-typedef struct Move
-{
-    Address address;
-    APiece piece;
-}Move;
+#include "board.h"
+#include "piece.h"
 
 // 駒を配置する
-void deployAPiece(Board *board, APiece piece, int row, int column)
+void deployPiece(Board *board, Piece piece, int row, int column)
 {
     (*board).squares[9 * (row - 1) + (column - 1)].isUsed = USED;
     (*board).squares[9 * (row - 1) + (column - 1)].piece = piece;
@@ -60,52 +17,52 @@ Board initBoard()
         int row = i / 9 + 1;
         int column = i % 9 + 1;
         Address address = {row, column};
-        APiece piece = generateAPiece(NON, 0, FIRST);
+        Piece piece = generatePiece(NON, 0, FIRST);
         Square square = {address, NOT_USED, piece};
         board.squares[i] = square;
     }
 
-    deployAPiece(&board, generateAPiece(KING, 1, FIRST), 9, 5);
-    deployAPiece(&board, generateAPiece(ROOK, 2, FIRST), 8, 2);
-    deployAPiece(&board, generateAPiece(BICHOP, 3, FIRST), 8, 8);
-    deployAPiece(&board, generateAPiece(GOLDGENERAL, 4, FIRST), 9, 4);
-    deployAPiece(&board, generateAPiece(GOLDGENERAL, 5, FIRST), 9, 6);
-    deployAPiece(&board, generateAPiece(SILVERGENERAL, 6, FIRST), 9, 3);
-    deployAPiece(&board, generateAPiece(SILVERGENERAL, 7, FIRST), 9, 7);
-    deployAPiece(&board, generateAPiece(KNIGHT, 8, FIRST), 9, 2);
-    deployAPiece(&board, generateAPiece(KNIGHT, 9, FIRST), 9, 8);
-    deployAPiece(&board, generateAPiece(LANCE, 10, FIRST), 9, 1);
-    deployAPiece(&board, generateAPiece(LANCE, 11, FIRST), 9, 9);
-    deployAPiece(&board, generateAPiece(PAWN, 12, FIRST), 7, 1);
-    deployAPiece(&board, generateAPiece(PAWN, 13, FIRST), 7, 2);
-    deployAPiece(&board, generateAPiece(PAWN, 14, FIRST), 7, 3);
-    deployAPiece(&board, generateAPiece(PAWN, 15, FIRST), 7, 4);
-    deployAPiece(&board, generateAPiece(PAWN, 16, FIRST), 7, 5);
-    deployAPiece(&board, generateAPiece(PAWN, 17, FIRST), 7, 6);
-    deployAPiece(&board, generateAPiece(PAWN, 18, FIRST), 7, 7);
-    deployAPiece(&board, generateAPiece(PAWN, 19, FIRST), 7, 8);
-    deployAPiece(&board, generateAPiece(PAWN, 20, FIRST), 7, 9);
+    deployPiece(&board, generatePiece(KING, 1, FIRST), 9, 5);
+    deployPiece(&board, generatePiece(ROOK, 2, FIRST), 8, 2);
+    deployPiece(&board, generatePiece(BICHOP, 3, FIRST), 8, 8);
+    deployPiece(&board, generatePiece(GOLDGENERAL, 4, FIRST), 9, 4);
+    deployPiece(&board, generatePiece(GOLDGENERAL, 5, FIRST), 9, 6);
+    deployPiece(&board, generatePiece(SILVERGENERAL, 6, FIRST), 9, 3);
+    deployPiece(&board, generatePiece(SILVERGENERAL, 7, FIRST), 9, 7);
+    deployPiece(&board, generatePiece(KNIGHT, 8, FIRST), 9, 2);
+    deployPiece(&board, generatePiece(KNIGHT, 9, FIRST), 9, 8);
+    deployPiece(&board, generatePiece(LANCE, 10, FIRST), 9, 1);
+    deployPiece(&board, generatePiece(LANCE, 11, FIRST), 9, 9);
+    deployPiece(&board, generatePiece(PAWN, 12, FIRST), 7, 1);
+    deployPiece(&board, generatePiece(PAWN, 13, FIRST), 7, 2);
+    deployPiece(&board, generatePiece(PAWN, 14, FIRST), 7, 3);
+    deployPiece(&board, generatePiece(PAWN, 15, FIRST), 7, 4);
+    deployPiece(&board, generatePiece(PAWN, 16, FIRST), 7, 5);
+    deployPiece(&board, generatePiece(PAWN, 17, FIRST), 7, 6);
+    deployPiece(&board, generatePiece(PAWN, 18, FIRST), 7, 7);
+    deployPiece(&board, generatePiece(PAWN, 19, FIRST), 7, 8);
+    deployPiece(&board, generatePiece(PAWN, 20, FIRST), 7, 9);
 
-    deployAPiece(&board, generateAPiece(KING, 21, SECOND), 1, 5);
-    deployAPiece(&board, generateAPiece(ROOK, 22, SECOND), 2, 8);
-    deployAPiece(&board, generateAPiece(BICHOP, 23, SECOND), 2, 2);
-    deployAPiece(&board, generateAPiece(GOLDGENERAL, 24, SECOND), 1, 4);
-    deployAPiece(&board, generateAPiece(GOLDGENERAL, 25, SECOND), 1, 6);
-    deployAPiece(&board, generateAPiece(SILVERGENERAL, 26, SECOND), 1, 3);
-    deployAPiece(&board, generateAPiece(SILVERGENERAL, 27, SECOND), 1, 7);
-    deployAPiece(&board, generateAPiece(KNIGHT, 28, SECOND), 1, 2);
-    deployAPiece(&board, generateAPiece(KNIGHT, 29, SECOND), 1, 8);
-    deployAPiece(&board, generateAPiece(LANCE, 30, SECOND), 1, 1);
-    deployAPiece(&board, generateAPiece(LANCE, 31, SECOND), 1, 9);
-    deployAPiece(&board, generateAPiece(PAWN, 32, SECOND), 3, 1);
-    deployAPiece(&board, generateAPiece(PAWN, 33, SECOND), 3, 2);
-    deployAPiece(&board, generateAPiece(PAWN, 34, SECOND), 3, 3);
-    deployAPiece(&board, generateAPiece(PAWN, 35, SECOND), 3, 4);
-    deployAPiece(&board, generateAPiece(PAWN, 36, SECOND), 3, 5);
-    deployAPiece(&board, generateAPiece(PAWN, 37, SECOND), 3, 6);
-    deployAPiece(&board, generateAPiece(PAWN, 38, SECOND), 3, 7);
-    deployAPiece(&board, generateAPiece(PAWN, 39, SECOND), 3, 8);
-    deployAPiece(&board, generateAPiece(PAWN, 40, SECOND), 3, 9);
+    deployPiece(&board, generatePiece(KING, 21, SECOND), 1, 5);
+    deployPiece(&board, generatePiece(ROOK, 22, SECOND), 2, 8);
+    deployPiece(&board, generatePiece(BICHOP, 23, SECOND), 2, 2);
+    deployPiece(&board, generatePiece(GOLDGENERAL, 24, SECOND), 1, 4);
+    deployPiece(&board, generatePiece(GOLDGENERAL, 25, SECOND), 1, 6);
+    deployPiece(&board, generatePiece(SILVERGENERAL, 26, SECOND), 1, 3);
+    deployPiece(&board, generatePiece(SILVERGENERAL, 27, SECOND), 1, 7);
+    deployPiece(&board, generatePiece(KNIGHT, 28, SECOND), 1, 2);
+    deployPiece(&board, generatePiece(KNIGHT, 29, SECOND), 1, 8);
+    deployPiece(&board, generatePiece(LANCE, 30, SECOND), 1, 1);
+    deployPiece(&board, generatePiece(LANCE, 31, SECOND), 1, 9);
+    deployPiece(&board, generatePiece(PAWN, 32, SECOND), 3, 1);
+    deployPiece(&board, generatePiece(PAWN, 33, SECOND), 3, 2);
+    deployPiece(&board, generatePiece(PAWN, 34, SECOND), 3, 3);
+    deployPiece(&board, generatePiece(PAWN, 35, SECOND), 3, 4);
+    deployPiece(&board, generatePiece(PAWN, 36, SECOND), 3, 5);
+    deployPiece(&board, generatePiece(PAWN, 37, SECOND), 3, 6);
+    deployPiece(&board, generatePiece(PAWN, 38, SECOND), 3, 7);
+    deployPiece(&board, generatePiece(PAWN, 39, SECOND), 3, 8);
+    deployPiece(&board, generatePiece(PAWN, 40, SECOND), 3, 9);
     return board;
 }
 
@@ -118,7 +75,7 @@ void displayCondition(Condition condition)
         printf("|");
         for (int i2 = NUMBER_OF_EDGE - 1; i2 > -1; i2--)
         {
-            APiece piece = condition.board.squares[i1 * NUMBER_OF_EDGE + i2].piece;
+            Piece piece = condition.board.squares[i1 * NUMBER_OF_EDGE + i2].piece;
             if (piece.piece.name == NON)
             {
                 printf("%s|", pieceToString(piece.piece));
@@ -138,7 +95,7 @@ void displayCondition(Condition condition)
     printf("NotOnBoard:\n");
     for (int i = 0; i < NUMBER_OF_PIECES; i++)
     {
-        APiece piece = condition.notOnBoard[i];
+        Piece piece = condition.notOnBoard[i];
         if (piece.piece.name == NON)
         {
             continue;
@@ -156,11 +113,11 @@ void displayCondition(Condition condition)
 }
 
 // 持ち駒の初期化
-void initNotOnBoard(APiece notOnBoard[NUMBER_OF_PIECES])
+void initNotOnBoard(Piece notOnBoard[NUMBER_OF_PIECES])
 {
     for (int i = 0; i < NUMBER_OF_PIECES; i++)
     {
-        notOnBoard[i] = generateAPiece(NON, 0, FIRST);
+        notOnBoard[i] = generatePiece(NON, 0, FIRST);
     }
 }
 
@@ -177,11 +134,11 @@ Condition initCondition()
 }
 
 // 任意の駒が盤面のどこに位置するか調べる　存在しない場合は、0,0を返す
-Address serchPieceFromBoard(Board board, APiece piece)
+Address serchPieceFromBoard(Board board, Piece piece)
 {
     for (int i = 0; i < NUMBER_OF_SQUARES; i++)
     {
-        APiece apiece = board.squares[i].piece;
+        Piece apiece = board.squares[i].piece;
         if (apiece.index == piece.index && apiece.piece.name != NON)
         {
             return board.squares[i].address;
@@ -192,11 +149,11 @@ Address serchPieceFromBoard(Board board, APiece piece)
 }
 
 // 任意の駒が持ち駒の中のどこに位置するか調べる 存在しない場合は、-1を返す
-int serchPieceFromNotOnBoard(APiece notOnBoard[NUMBER_OF_PIECES], APiece piece)
+int serchPieceFromNotOnBoard(Piece notOnBoard[NUMBER_OF_PIECES], Piece piece)
 {
     for (int i = 0; i < NUMBER_OF_PIECES; i++)
     {
-        APiece apiece = notOnBoard[i];
+        Piece apiece = notOnBoard[i];
         if (apiece.index == piece.index)
         {
             return i;
@@ -206,7 +163,7 @@ int serchPieceFromNotOnBoard(APiece notOnBoard[NUMBER_OF_PIECES], APiece piece)
 }
 
 // 盤面の任意の場所に駒を設置する
-void deployPieceOnBoard(Board *board, Address address, APiece piece)
+void deployPieceOnBoard(Board *board, Address address, Piece piece)
 {
     for (int i = 0; i < NUMBER_OF_SQUARES; i++)
     {
@@ -218,7 +175,7 @@ void deployPieceOnBoard(Board *board, Address address, APiece piece)
 }
 
 // 持ち駒の任意の場所に駒を設置する
-void deployPieceNotOnBoard(APiece notOnBoard[NUMBER_OF_PIECES], int index, APiece piece)
+void deployPieceNotOnBoard(Piece notOnBoard[NUMBER_OF_PIECES], int index, Piece piece)
 {
     notOnBoard[index] = piece;
 }
@@ -252,9 +209,9 @@ bool ableMove(Turn turn, PieceName name, Address address)
 }
 
 // 指定の駒が成ることが出来るか
-bool ableBe(Address oldAddress, Address newAddress, APiece piece)
+bool ableBe(Address oldAddress, Address newAddress, Piece piece)
 {
-    if (piece.piece.promote)
+    if (piece.piece.promotion)
     {
         if (piece.turn == FIRST)
         {
@@ -269,7 +226,7 @@ bool ableBe(Address oldAddress, Address newAddress, APiece piece)
 }
 
 // 指定の方向に移動する
-Square moveBoard(Board board, APiece piece, int row, int column, int length, Direction direction)
+Square moveBoard(Board board, Piece piece, int row, int column, int length, Direction direction)
 {
     Turn turn = piece.turn;
 
@@ -313,19 +270,19 @@ Square moveBoard(Board board, APiece piece, int row, int column, int length, Dir
 
     // 枠外の場合
     Address address = {0, 0};
-    APiece p = generateAPiece(NON, 0, FIRST);
+    Piece p = generatePiece(NON, 0, FIRST);
     Square square = {address, NOT_USED, p};
     return square;
 }
 
 // 特定の方向にnマス移動した場所を返す
-Square getSquareWhenMoved(Board board, APiece piece, int row, int column, int length, Direction direction)
+Square getSquareWhenMoved(Board board, Piece piece, int row, int column, int length, Direction direction)
 {
     return moveBoard(board, piece, row, column, length, direction);
 }
 
 // 桂馬の動く先
-Square getSquareWhenMovedKnight(Board board, APiece piece, int row, int column, Direction direction)
+Square getSquareWhenMovedKnight(Board board, Piece piece, int row, int column, Direction direction)
 {
     Turn turn = piece.turn;
     if (turn == SECOND)
@@ -335,7 +292,7 @@ Square getSquareWhenMovedKnight(Board board, APiece piece, int row, int column, 
 }
 
 // 二歩を検知
-bool isTwoSteps(Board board, APiece piece, Address address)
+bool isTwoSteps(Board board, Piece piece, Address address)
 {
     if (piece.piece.name == PAWN)
     {
@@ -360,7 +317,7 @@ bool isTwoSteps(Board board, APiece piece, Address address)
 }
 
 // 手を追加
-void addMoves(Move **moves, int *count, Address address, APiece piece)
+void addMoves(Move **moves, int *count, Address address, Piece piece)
 {
     Move *old = *moves;
     *moves = (Move *)calloc(*count + 1, sizeof(Move));
@@ -384,17 +341,17 @@ void serchAndAddMoves(Move **pointableHands, int *count, Square fromSquare, Squa
         {
             // 成らなくてもまだ、動くことが可能な場合
             addMoves(pointableHands, count, targetSquare.address, fromSquare.piece);
-            APiece promotedPiece = fromSquare.piece;
-            promotedPiece.piece.name = getPieceNameAfterBecome(fromSquare.piece.piece);
-            promotedPiece.piece.promote = NOTPROMOTABLE;
+            Piece promotedPiece = fromSquare.piece;
+            promotedPiece.piece.name = getPromotedPieceName(fromSquare.piece.piece.name);
+            promotedPiece.piece.promotion = NOTPROMOTABLE;
             addMoves(pointableHands, count, targetSquare.address, promotedPiece);
         }
         else
         {
             // 成らないと動くことが出来なくなる場合
-            APiece promotedPiece = fromSquare.piece;
-            promotedPiece.piece.name = getPieceNameAfterBecome(fromSquare.piece.piece);
-            promotedPiece.piece.promote = NOTPROMOTABLE;
+            Piece promotedPiece = fromSquare.piece;
+            promotedPiece.piece.name = getPromotedPieceName(fromSquare.piece.piece.name);
+            promotedPiece.piece.promotion = NOTPROMOTABLE;
             addMoves(pointableHands, count, targetSquare.address, promotedPiece);
         }
     }
@@ -497,7 +454,7 @@ int serchPointableHands(Condition condition, Move **pointableHands)
     // 盤面
     for (int i = 0; i < NUMBER_OF_SQUARES; i++)
     {
-        APiece piece = condition.board.squares[i].piece;
+        Piece piece = condition.board.squares[i].piece;
         if (piece.piece.name != NON && piece.turn == condition.turn)
         {
             Address address = condition.board.squares[i].address;
@@ -512,7 +469,7 @@ int serchPointableHands(Condition condition, Move **pointableHands)
     // 持ち駒
     for (int i = 0; i < NUMBER_OF_PIECES; i++)
     {
-        APiece piece = condition.notOnBoard[i];
+        Piece piece = condition.notOnBoard[i];
         // 有効な持ち駒
         if (piece.piece.name != NON && piece.turn == condition.turn)
         {
@@ -545,14 +502,14 @@ void executeMove(Condition *condition, Move move)
     Address address = serchPieceFromBoard((*condition).board, move.piece);
     if (address.row != 0 && address.column != 0)
     {
-        deployPieceOnBoard(&(*condition).board, address, generateAPiece(NON, 0, FIRST));
+        deployPieceOnBoard(&(*condition).board, address, generatePiece(NON, 0, FIRST));
     }
 
     // 持ち駒
     int notOnBoardIndex = serchPieceFromNotOnBoard((*condition).notOnBoard, move.piece);
     if (notOnBoardIndex != -1)
     {
-        deployPieceNotOnBoard((*condition).notOnBoard, notOnBoardIndex, generateAPiece(NON, 0, FIRST));
+        deployPieceNotOnBoard((*condition).notOnBoard, notOnBoardIndex, generatePiece(NON, 0, FIRST));
     }
 
     // 駒を設置し、すでに設置されている駒があった場合は、持ち駒の空いている場所に移す
@@ -564,10 +521,10 @@ void executeMove(Condition *condition, Move move)
             if ((*square).piece.piece.name != NON)
             {
                 // すでに設置されている駒があった場合は、持ち駒の空いている場所に移す
-                int ind = serchPieceFromNotOnBoard((*condition).notOnBoard, generateAPiece(NON, 0, FIRST));
+                int ind = serchPieceFromNotOnBoard((*condition).notOnBoard, generatePiece(NON, 0, FIRST));
                 (*square).piece.turn = !(*square).piece.turn;
-                (*square).piece.piece.name = getPieceNameBeforeBecome((*square).piece.piece);
-                (*square).piece.piece.promote = getPromoteByPieceName((*square).piece.piece.name);
+                (*square).piece.piece.name = getPieceNameBeforePromote((*square).piece.piece.name);
+                (*square).piece.piece.promotion = getPromotion((*square).piece.piece.name);
                 deployPieceNotOnBoard((*condition).notOnBoard, ind, (*square).piece);
             }
             
